@@ -1,19 +1,51 @@
+local crypt = f.loadfile("lib/cryptographie.lua")()
 local console = f.loadfile("lib/console.lua")()
-
-
 print = console.print
+
+
+component.modem.open(1)
+
+--+-+-+-+-+ Modem Command +-+-+-+-+--
+
+local modem_handler = {}
+setmetatable(modem_handler, {
+    __index = function() return function(d)print("unknow message :") print(d)end end
+})
+
+function modem_handler.log(d)
+    print("logged : ") print(d)
+end
+
+--+-+-+-+-+ Shell Command +-+-+-+-+--
+
+local command_handler = {}
+setmetatable(command_handler, {
+    __index = function(_,k) return function()print("unknow command ".. k) command_handler.help() end end
+})
+
+function command_handler.help(d)
+    print("help : show this page")
+    print("broad <arg1> [<arg2> ... <argn>] : broadcast uncripted datas")
+end
+
+function command_handler.broad(d)
+    print("sending :")
+    print(d)
+    data , hash , sig = crypt.signPayload("log", d)
+    component.modem.broadcast(1, data , hash , sig)
+end
+
+--+-+-+-+-+ Main loop +-+-+-+-+--
 
 function handler(e,args)
     if e=='input_prompt' then 
-        
-        print("Commande lue :")
-        for k, v in pairs(args) do
-            print("args[" .. k .. "] = '" .. v .. "'")
-        end
+        if type(args[1]) == "string" then  command_handler[args[1]](table.move(args, 2, #args, 1, {}))
+        else command_handler[""](args) end
     elseif e == 'modem_message' then
-        
+        data = crypt.unsignPayload(args[5], args[6], args[7])
+        if type(data[1]) == "string" then modem_handler[data[1]](table.move(data, 2, #data, 2, {args[2]}));
+        else modem_handler[""](table.move(data, 1, #data, 2, {args[2]})) end
     end
-
 end
 
 console.loop(handler)

@@ -384,7 +384,7 @@ while true do
            inp.MovePos(1)
        end
     else
-        handler(evt[1], table.move(t, 2, #t, 1, {}))
+        handler(evt[1], table.move(evt, 2, #evt, 1, {}))
     end
     if blinkon then -- cursor blink
       local posx = console.input.col + console.input.printoffset - 1
