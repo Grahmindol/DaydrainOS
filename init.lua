@@ -137,7 +137,24 @@ function error(msg)
     gpu.fill(1, 1, 80, 25, ' ')
     gpu.setForeground(0xFF0000)
     gpu.setBackground(0x000000)
-    gpu.set(1, 1, "Error: " .. msg)
+
+    local lines = (function(str, maxlen)
+      local t = {}
+      for line in str:gmatch("([^\n]*)\n?") do
+        while #line > maxlen do
+          local part = line:sub(1, maxlen)
+          table.insert(t, part)
+          line = line:sub(maxlen + 1)
+        end
+        if line ~= "" then
+          table.insert(t, line)
+        end
+      end
+      return t
+    end)(msg, 80)
+    for i, line in ipairs(lines) do
+      gpu.set(1, i, line)
+    end
     gpu.setForeground(0xFFFFFF)
     repeat
       local e, addr, char, code = computer.pullSignal()
