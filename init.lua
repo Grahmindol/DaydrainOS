@@ -1,6 +1,6 @@
 _osname = 'Daydrain OS'
 _osversion = '0.0.1'
-MasterAddr = ''
+
 -- ========== INIT START ========== --
 --+-+-+-+-+ Require +-+-+-+-+--
 function require(pkg)
