@@ -14,8 +14,8 @@ daydrainOS est conçu pour :
 
 ## 🚀 Fonctionnalités principales
 
-- [ ] Système de tourelle automatique. (OpenSecurity)
-- [ ] Système de porte automatique. (OpenSecurity)
+- [x] Système de tourelle automatique. (OpenSecurity)
+- [x] Système de porte automatique. (OpenSecurity)
 - [ ] Système d'ascenseur automatique. (Thut's Elevators)
 - [ ] Système d'alarme automatique (OpenSecurity)
 - [ ] Système de lumiere automatique (OpenLight)
