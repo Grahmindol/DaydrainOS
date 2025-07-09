@@ -1,5 +1,10 @@
 local crypt = {}
 
+-- TO DO LIST
+-- man-in-the-middle au moment de l’init (crypt.slave.init()).
+-- gestion d’expiration / renouvellement de clés
+-- protection anti-spam
+
 component.modem.open(1)
 
 crypt.json = f.loadfile("lib/json.lua")()

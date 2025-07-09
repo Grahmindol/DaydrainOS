@@ -174,21 +174,25 @@ function sleep(timeout)
 end
 -- ========== INIT END ========== --
 
+if (not component.data) or (not component.modem)  or (not component.data.deserializeKey) then 
+  error("Data Card III & Network Card are required !") 
+end
+component.modem.setWakeMessage("WAKEUP", true)
 
 -- autorun
-if  component.openlight ~= nil then
+if  component.openlight then
     f.runfile('bin/light')
-  elseif component.os_alarm ~= nil then
+  elseif component.os_alarm then
     f.runfile('bin/alarm')
-  elseif (component.os_doorcontroller ~= nil) or (component.os_rolldoorcontroller ~= nil) then
+  elseif component.os_doorcontroller or component.os_rolldoorcontroller then
     f.runfile('bin/door')
-  elseif component.os_energyturret ~= nil then
+  elseif component.os_energyturret then
     f.runfile('bin/turret')
-  elseif component.openprinter ~= nil then
+  elseif component.openprinter then
     f.runfile('bin/printer')  
-  elseif component.draconic_reactor ~= nil then
+  elseif component.draconic_reactor then
     f.runfile('bin/draconic') 
-  elseif component.gpu ~= nil then
+  elseif component.gpu then
     f.runfile('bin/serveur') 
 end
 
