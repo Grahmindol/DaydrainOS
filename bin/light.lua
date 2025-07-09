@@ -24,15 +24,20 @@ setmetatable(command_handler, {
 
 function command_handler.help(d)
     print("help : show this page")
-    print("broad <arg1> [<arg2> ... <argn>] : broadcast uncripted data")
+    print("broad [<arg1> <arg2> ... <argn>] : broadcast uncripted data")
+    print("send [<arg1>  <arg2> ... <argn>] : send an encoded message to the master")
 end
 
 function command_handler.broad(d)
     print("sending :")
     print(d)
-    local data = crypt.pack("log", d)
-    local hash , sig = crypt.signPayload(data)
-    component.modem.broadcast(1, data , hash , sig)
+    crypt.slave.broadcast("log", d)
+end
+
+function command_handler.send(d)
+    local res, err = crypt.slave.send("log", d)
+    if res then print("sent !")
+    else print(err) end
 end
 
 
@@ -41,9 +46,7 @@ function handler(e,args)
         if type(args[1]) == "string" then  command_handler[args[1]](table.move(args, 2, #args, 1, {}))
         else command_handler[""](args) end
     elseif e == 'modem_message' then
-        data = crypt.unpack(args[5])
-        if type(data[1]) == "string" then modem_handler[data[1]](table.move(data, 2, #data, 2, {args[2]}));
-        else modem_handler[""](table.move(data, 1, #data, 2, {args[2]})) end
+        crypt.slave.receive(args, modem_handler)
     end
 end
 

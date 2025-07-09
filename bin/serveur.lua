@@ -2,29 +2,12 @@ local crypt = f.loadfile("lib/cryptographie.lua")()
 local console = f.loadfile("lib/console.lua")()
 print = console.print
 
-local slave_keys = {}
-
-
 --+-+-+-+-+ Modem Command +-+-+-+-+--
 
 local modem_handler = {}
 setmetatable(modem_handler, {
     __index = function() return function(d)print("unknow message :") print(d)end end
 })
-
-function modem_handler.sign_up(d) -- TO DO verifier que le message a ete signé par le porprietare de la clef
-    print(d[1].." is signing up")
-    if slave_keys[d[1]] then print(d[1].." is already registered, removing.... ") end
-    local key, err = component.data.deserializeKey(d[2], "ec-public")
-    if not key then print("ERROR :".. err) return end
-    local shared = component.data.sha256(component.data.ecdh(crypt.pvt_key, key)):sub(1, 16)
-    slave_keys[d[1]] = {["secret"] = shared, ["pub_key"] = key}
-    local data = crypt.pack("pub_key", crypt.pub_key.serialize())
-    local hash , sig = crypt.signPayload(data)
-    component.modem.send(d[1], 1, data , hash , sig)
-    print("done !")
-end
-
 
 function modem_handler.log(d)
     print("logged : ") print(d)
@@ -39,15 +22,18 @@ setmetatable(command_handler, {
 
 function command_handler.help(d)
     print("help : show this page")
-    print("broad <arg1> [<arg2> ... <argn>] : broadcast uncripted data")
+    print("broad [<arg1> <arg2> ... <argn>] : broadcast uncripted data")
+    print("send <addr> [<arg1> <arg2> ... <argn>] : encode and send data")
 end
 
 function command_handler.broad(d)
-    print("sending :")
-    print(d)
-    local data = crypt.pack("log", d)
-    local hash , sig = crypt.signPayload(data)
-    component.modem.broadcast(1, data , hash , sig)
+    crypt.master.broadcast("log", d)
+end
+
+function command_handler.send(d)
+    local res, err = crypt.master.send(d[1], "log", table.move(d, 2, #d, 1, {}))
+    if res then print("sent !")
+    else print(err) end
 end
 
 --+-+-+-+-+ Main loop +-+-+-+-+--
@@ -57,9 +43,8 @@ function handler(e,args)
         if type(args[1]) == "string" then  command_handler[args[1]](table.move(args, 2, #args, 1, {}))
         else command_handler[""](args) end
     elseif e == 'modem_message' then
-        data = crypt.unpack(args[5])
-        if type(data[1]) == "string" then modem_handler[data[1]](table.move(data, 2, #data, 2, {args[2]}));
-        else modem_handler[""](table.move(data, 1, #data, 2, {args[2]})) end
+        local res,err = crypt.master.receive(args, modem_handler)
+        if not res then print(err) end
     end
 end
 
