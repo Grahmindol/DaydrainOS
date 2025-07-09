@@ -1,8 +1,7 @@
 local crypt = f.loadfile("lib/cryptographie.lua")()
 local console = f.loadfile("lib/console.lua")()
-print = console.print
-
-local slave_keys = {}
+_osname = _osname.. " - Ligh Manager"
+crypt.slave.init()
 
 
 --+-+-+-+-+ Modem Command +-+-+-+-+--
@@ -11,20 +10,6 @@ local modem_handler = {}
 setmetatable(modem_handler, {
     __index = function() return function(d)print("unknow message :") print(d)end end
 })
-
-function modem_handler.sign_up(d) -- TO DO verifier que le message a ete signé par le porprietare de la clef
-    print(d[1].." is signing up")
-    if slave_keys[d[1]] then print(d[1].." is already registered, removing.... ") end
-    local key, err = component.data.deserializeKey(d[2], "ec-public")
-    if not key then print("ERROR :".. err) return end
-    local shared = component.data.sha256(component.data.ecdh(crypt.pvt_key, key)):sub(1, 16)
-    slave_keys[d[1]] = {["secret"] = shared, ["pub_key"] = key}
-    local data = crypt.pack("pub_key", crypt.pub_key.serialize())
-    local hash , sig = crypt.signPayload(data)
-    component.modem.send(d[1], 1, data , hash , sig)
-    print("done !")
-end
-
 
 function modem_handler.log(d)
     print("logged : ") print(d)
@@ -50,7 +35,6 @@ function command_handler.broad(d)
     component.modem.broadcast(1, data , hash , sig)
 end
 
---+-+-+-+-+ Main loop +-+-+-+-+--
 
 function handler(e,args)
     if e=='input_prompt' then 

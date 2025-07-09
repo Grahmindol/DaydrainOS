@@ -176,19 +176,7 @@ end
 
 
 -- autorun
-if component.gpu ~= nil then
-  f.runfile('bin/serveur')  
-else
-  local evt
-  component.modem.open(1)
-  while MasterAddr == ''  do
-    evt = table.pack(computer.pullSignal())
-    if evt[1] == "modem_message" and evt[6] == "connect" then
-        MasterAddr = evt[3]
-    end
-  end
-  component.modem.close(1)
-  if  component.openlight ~= nil then
+if  component.openlight ~= nil then
     f.runfile('bin/light')
   elseif component.os_alarm ~= nil then
     f.runfile('bin/alarm')
@@ -200,7 +188,8 @@ else
     f.runfile('bin/printer')  
   elseif component.draconic_reactor ~= nil then
     f.runfile('bin/draconic') 
-  end
+  elseif component.gpu ~= nil then
+    f.runfile('bin/serveur') 
 end
 
 
