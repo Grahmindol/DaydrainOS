@@ -1,7 +1,7 @@
 --
 -- json.lua
 --
--- Copyright (c) 2020 rxi
+-- Copyright (c) 2020 rxi edited by grahmindol on 2025 (original file : https://github.com/rxi/json.lua/blob/master/json.lua)
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy of
 -- this software and associated documentation files (the "Software"), to deal in
@@ -182,7 +182,8 @@ local function decode_error(str, idx, msg)
       col_count = 1
     end
   end
-  error( string.format("%s at line %d col %d", msg, line_count, col_count) )
+  --error( string.format("%s at line %d col %d", msg, line_count, col_count) )
+  return nil, string.format("%s at line %d col %d", msg, line_count, col_count)
 end
 
 
@@ -224,7 +225,7 @@ local function parse_string(str, i)
     local x = str:byte(j)
 
     if x < 32 then
-      decode_error(str, j, "control character in string")
+      return decode_error(str, j, "control character in string")
 
     elseif x == 92 then -- `\`: Escape
       res = res .. str:sub(k, j - 1)
@@ -233,12 +234,14 @@ local function parse_string(str, i)
       if c == "u" then
         local hex = str:match("^[dD][89aAbB]%x%x\\u%x%x%x%x", j + 1)
                  or str:match("^%x%x%x%x", j + 1)
-                 or decode_error(str, j - 1, "invalid unicode escape in string")
+        if not hex then 
+          return decode_error(str, j - 1, "invalid unicode escape in string")
+        end
         res = res .. parse_unicode_escape(hex)
         j = j + #hex
       else
         if not escape_chars[c] then
-          decode_error(str, j - 1, "invalid escape char '" .. c .. "' in string")
+          return decode_error(str, j - 1, "invalid escape char '" .. c .. "' in string")
         end
         res = res .. escape_char_map_inv[c]
       end
@@ -252,7 +255,7 @@ local function parse_string(str, i)
     j = j + 1
   end
 
-  decode_error(str, i, "expected closing quote for string")
+  return decode_error(str, i, "expected closing quote for string")
 end
 
 
@@ -261,7 +264,7 @@ local function parse_number(str, i)
   local s = str:sub(i, x - 1)
   local n = tonumber(s)
   if not n then
-    decode_error(str, i, "invalid number '" .. s .. "'")
+    return decode_error(str, i, "invalid number '" .. s .. "'")
   end
   return n, x
 end
@@ -271,7 +274,7 @@ local function parse_literal(str, i)
   local x = next_char(str, i, delim_chars)
   local word = str:sub(i, x - 1)
   if not literals[word] then
-    decode_error(str, i, "invalid literal '" .. word .. "'")
+    return decode_error(str, i, "invalid literal '" .. word .. "'")
   end
   return literal_map[word], x
 end
@@ -291,6 +294,7 @@ local function parse_array(str, i)
     end
     -- Read token
     x, i = parse(str, i)
+    if not x then return nil, i end
     res[n] = x
     n = n + 1
     -- Next token
@@ -298,7 +302,7 @@ local function parse_array(str, i)
     local chr = str:sub(i, i)
     i = i + 1
     if chr == "]" then break end
-    if chr ~= "," then decode_error(str, i, "expected ']' or ','") end
+    if chr ~= "," then return decode_error(str, i, "expected ']' or ','") end
   end
   return res, i
 end
@@ -317,17 +321,19 @@ local function parse_object(str, i)
     end
     -- Read key
     if str:sub(i, i) ~= '"' then
-      decode_error(str, i, "expected string for key")
+      return decode_error(str, i, "expected string for key")
     end
     key, i = parse(str, i)
+    if not key then return nil, i end
     -- Read ':' delimiter
     i = next_char(str, i, space_chars, true)
     if str:sub(i, i) ~= ":" then
-      decode_error(str, i, "expected ':' after key")
+      return decode_error(str, i, "expected ':' after key")
     end
     i = next_char(str, i + 1, space_chars, true)
     -- Read value
     val, i = parse(str, i)
+    if not val then return nil, i end
     -- Set
     res[key] = val
     -- Next token
@@ -335,7 +341,7 @@ local function parse_object(str, i)
     local chr = str:sub(i, i)
     i = i + 1
     if chr == "}" then break end
-    if chr ~= "," then decode_error(str, i, "expected '}' or ','") end
+    if chr ~= "," then return decode_error(str, i, "expected '}' or ','") end
   end
   return res, i
 end
@@ -368,7 +374,7 @@ parse = function(str, idx)
   if f then
     return f(str, idx)
   end
-  decode_error(str, idx, "unexpected character '" .. chr .. "'")
+  return decode_error(str, idx, "unexpected character '" .. chr .. "'")
 end
 
 
@@ -377,9 +383,10 @@ function json.decode(str)
     error("expected argument of type string, got " .. type(str))
   end
   local res, idx = parse(str, next_char(str, 1, space_chars, true))
+  if not res then return nil, idx end
   idx = next_char(str, idx, space_chars, true)
   if idx <= #str then
-    decode_error(str, idx, "trailing garbage")
+    return decode_error(str, idx, "trailing garbage")
   end
   return res
 end
