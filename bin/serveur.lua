@@ -2,7 +2,7 @@ local crypt = f.loadfile("lib/cryptographie.lua")().master
 local console = f.loadfile("lib/console.lua")()
 print = console.print
 local autorised = {["name"]= {}, ["uuid"] = {}}
-
+local pin = "0000"
 
 --+-+-+-+-+ Modem Command +-+-+-+-+--
 
@@ -19,6 +19,10 @@ function modem_handler.get_list(d)
     crypt.send(d[1], "set_list", autorised.name, autorised.uuid)
 end
 
+function modem_handler.get_pin(d)
+    crypt.send(d[1], "set_pin", pin)
+end
+
 --+-+-+-+-+ Shell Command +-+-+-+-+--
 
 local command_handler = {}
@@ -31,6 +35,7 @@ function command_handler.help(d)
     print("broad [<arg1> <arg2> ... <argn>] : broadcast uncripted data")
     print("send <addr> [<arg1> <arg2> ... <argn>] : encode and send data")
     print("add <name> : add a name to the list of authorized users")
+    print("set_pin <pin> : set the pin to use with the keypad, must be between 4 and 8 characters")
 end
 
 function command_handler.broad(d)
@@ -71,6 +76,21 @@ function command_handler.add(d)
     autorised.name[name] = true
     autorised.uuid[player_uuid] = true
     crypt.broadcast("set_list", autorised.name, autorised.uuid)
+end
+
+function command_handler.set_pin(d)
+    if #d[1] < 1 then
+        print("set_pin : missing pin")
+        return
+    end
+
+    if #d[1] < 4 or #d[1] > 8 then
+        print("set_pin : pin must be between 4 and 8 characters")
+        return
+    end
+    pin = d[1]
+    crypt.broadcast("set_pin", pin)
+    print("pin set to " .. pin)
 end
 
 --+-+-+-+-+ Main loop +-+-+-+-+--
