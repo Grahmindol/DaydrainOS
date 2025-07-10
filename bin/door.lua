@@ -1,6 +1,6 @@
 local crypt = f.loadfile("lib/cryptographie.lua")().slave
 
-crypt.init()
+crypt.init("door")
 
 _osname = _osname .. " - Door Manager"
 

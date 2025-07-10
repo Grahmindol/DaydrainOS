@@ -34,8 +34,15 @@ function command_handler.help(d)
     print("help : show this page")
     print("broad [<arg1> <arg2> ... <argn>] : broadcast uncripted data")
     print("send <addr> [<arg1> <arg2> ... <argn>] : encode and send data")
+    print("send_to <role> [<arg1> <arg2> ... <argn>] : encode and send data to all slave with the given role")
     print("add <name> : add a name to the list of authorized users")
     print("pin <pin> : set the pin to use with the keypad, must be between 4 and 8 characters")
+end
+
+function command_handler.send_to(d)
+    local res, err = crypt.send_to_role(d[1], "log", table.unpack(table.move(d, 2, #d, 1, {})))
+    if res then print("sent !")
+    else print(err) end
 end
 
 function command_handler.broad(d)

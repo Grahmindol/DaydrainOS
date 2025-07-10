@@ -1,7 +1,7 @@
 local crypt = f.loadfile("lib/cryptographie.lua")().slave
 local console = f.loadfile("lib/console.lua")()
 
-crypt.init()
+crypt.init("light")
 
 _osname = _osname.. " - Ligh Manager"
 

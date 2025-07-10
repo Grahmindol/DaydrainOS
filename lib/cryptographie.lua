@@ -59,8 +59,8 @@ end
 --+-+-+-+-+ Slave method +-+-+-+-+--
 crypt.slave = {}
 
-function crypt.slave.init()
-    local data = crypt.serialize("sign_up", crypt.pub_key.serialize())
+function crypt.slave.init(role)
+    local data = crypt.serialize("sign_up", crypt.pub_key.serialize(), role or "slave")
     local hash , sig, time = crypt.sign(data)
     component.modem.broadcast(1, data , hash , sig, time)
     local evt
@@ -152,11 +152,21 @@ function crypt.master.broadcast(...)
     return component.modem.broadcast(1, data, hash, sig, time) 
 end
 
-function crypt.master.register_slave(addr, serialized_key)
+function crypt.master.send_to_role(role, ...)
+    local res, err = true, ""
+    for addr, slave in pairs(crypt.master.slave_keys) do
+        if slave.role == role then
+            res, err = crypt.master.send(addr, ...)
+        end
+    end
+    return res, err
+end
+
+function crypt.master.register_slave(addr, serialized_key, role)
     local key, err = component.data.deserializeKey(serialized_key, "ec-public")
     if not key then return nil, err end
     local shared = component.data.sha256(component.data.ecdh(crypt.pvt_key, key)):sub(1, 16)
-    crypt.master.slave_keys[addr] = {["secret"] = shared, ["pub_key"] = key, ["full_addr"] = addr, ["last_time"] = ""}
+    crypt.master.slave_keys[addr] = {["secret"] = shared, ["pub_key"] = key, ["full_addr"] = addr, ["last_time"] = "", ["role"] = role}
     local data = crypt.serialize("pub_key", crypt.pub_key.serialize())
     local hash , sig, time = crypt.sign(data)
     component.modem.send(addr, 1, data , hash , sig, time)
@@ -172,7 +182,7 @@ function crypt.master.receive(args, handler)
     if not keys then -- it-s very dangerous  
         local cmd = crypt.deserialize(args[5])
         if cmd and cmd[1] == "sign_up" then 
-            return crypt.master.register_slave(args[2], cmd[2])
+            return crypt.master.register_slave(args[2], cmd[2], cmd[3])
         end
         return nil, "unauth message !"
     end

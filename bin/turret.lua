@@ -1,5 +1,5 @@
 local crypt = f.loadfile("lib/cryptographie.lua")().slave
-crypt.init()
+crypt.init("turret")
 local entd = component.os_entdetector
 local turret = component.os_energyturret
 local autorised = {}
