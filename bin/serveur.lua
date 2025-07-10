@@ -2,7 +2,7 @@ local crypt = f.loadfile("lib/cryptographie.lua")().master
 local console = f.loadfile("lib/console.lua")()
 print = console.print
 local autorised = {["name"]= {}, ["uuid"] = {}}
-local pin = "0000"
+local pin = "a"
 
 --+-+-+-+-+ Modem Command +-+-+-+-+--
 
@@ -35,7 +35,7 @@ function command_handler.help(d)
     print("broad [<arg1> <arg2> ... <argn>] : broadcast uncripted data")
     print("send <addr> [<arg1> <arg2> ... <argn>] : encode and send data")
     print("add <name> : add a name to the list of authorized users")
-    print("set_pin <pin> : set the pin to use with the keypad, must be between 4 and 8 characters")
+    print("pin <pin> : set the pin to use with the keypad, must be between 4 and 8 characters")
 end
 
 function command_handler.broad(d)
@@ -67,7 +67,7 @@ function command_handler.add(d)
 
     e.pullFiltered(function(e) return e == "cardInsert" end)
     
-    component.os_cardwriter.write(player_uuid..name, name, true, 7)
+    component.os_cardwriter.write(player_uuid, name, true, 7)
 
     autorised[player_uuid] = true
     autorised[name] = true
@@ -78,7 +78,7 @@ function command_handler.add(d)
     crypt.broadcast("set_list", autorised.name, autorised.uuid)
 end
 
-function command_handler.set_pin(d)
+function command_handler.pin(d)
     if #d[1] < 1 then
         print("set_pin : missing pin")
         return
