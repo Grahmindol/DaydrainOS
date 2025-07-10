@@ -189,7 +189,7 @@ function crypt.master.receive(args, handler)
     local cmd, err = crypt.deserialize(data)
     if not cmd then return nil, err end
     if type(cmd[1]) == "string" then 
-        local param = table.move(cmd, 2, #cmd, 1, {})
+        local param = table.move(cmd, 2, #cmd, 2, {args[2]})
         handler[cmd[1]](param)
     else 
         handler[""](table.move(cmd, 1, #cmd, 2, {args[2]})) 

@@ -114,8 +114,8 @@ e={
         repeat
             local f=table.pack(computer.pullSignal(h))
             if f.n>0 then
-                if not(h or d)or d==nil or d(table.unpack(e,1,f.n))then
-                    return table.unpack(e,1,f.n)
+                if not(h or d)or d==nil or d(table.unpack(f,1,f.n))then
+                    return table.unpack(f,1,f.n)
                 end
             end
         until f.n==0
