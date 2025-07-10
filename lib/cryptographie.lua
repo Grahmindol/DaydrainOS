@@ -84,13 +84,13 @@ function crypt.slave.send(...)
     local pack = crypt.serialize(...)
     local data = crypt.encodeData(pack, crypt.secret_key)
     local hash , sig, time = crypt.sign(data)
-    component.modem.send(crypt.master_addr, 1, data, hash, sig, time, true)
-end
+    return component.modem.send(crypt.master_addr, 1, data, hash, sig, time, true)
+end                                   
 
 function crypt.slave.broadcast(...)
     local data = crypt.serialize(...)
     local hash , sig, time = crypt.sign(data)
-    component.modem.broadcast(1, data, hash, sig, time)
+    return component.modem.broadcast(1, data, hash, sig, time)
 end
 
 function crypt.slave.receive(args, handler)
@@ -143,14 +143,13 @@ function crypt.master.send(addr, ...)
     local pack = crypt.serialize(...)
     local data = crypt.encodeData(pack, keys.secret)
     local hash , sig, time = crypt.sign(data)
-    component.modem.send(keys.full_addr, 1, data, hash, sig, time, true)
-    return true
+    return component.modem.send(keys.full_addr, 1, data, hash, sig, time, true)
 end
 
 function crypt.master.broadcast(...)
     local data = crypt.serialize(...)
     local hash , sig, time = crypt.sign(data)
-    component.modem.broadcast(1, data, hash, sig, time)
+    return component.modem.broadcast(1, data, hash, sig, time) 
 end
 
 function crypt.master.register_slave(addr, serialized_key)
@@ -162,6 +161,10 @@ function crypt.master.register_slave(addr, serialized_key)
     local hash , sig, time = crypt.sign(data)
     component.modem.send(addr, 1, data , hash , sig, time)
     return nil, "new slave :" .. addr -- it's not an error but with it we can log
+end
+
+function crypt.master.unregister_slave(addr)
+    crypt.master.slave_keys[crypt.master.slave_keys[addr].full_addr] = nil
 end
 
 function crypt.master.receive(args, handler)

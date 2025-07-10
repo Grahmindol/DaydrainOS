@@ -1,4 +1,4 @@
-local crypt = f.loadfile("lib/cryptographie.lua")()
+local crypt = f.loadfile("lib/cryptographie.lua")().master
 local console = f.loadfile("lib/console.lua")()
 print = console.print
 
@@ -27,11 +27,13 @@ function command_handler.help(d)
 end
 
 function command_handler.broad(d)
-    crypt.master.broadcast("log", d)
+    local res, err = crypt.broadcast("log", table.unpack(d))
+    if res then print("sent !")
+    else print(err) end
 end
 
 function command_handler.send(d)
-    local res, err = crypt.master.send(d[1], "log", table.move(d, 2, #d, 1, {}))
+    local res, err = crypt.send(d[1], "log", table.unpack(table.move(d, 2, #d, 1, {})))
     if res then print("sent !")
     else print(err) end
 end
@@ -43,7 +45,7 @@ function handler(e,args)
         if type(args[1]) == "string" then  command_handler[args[1]](table.move(args, 2, #args, 1, {}))
         else command_handler[""](args) end
     elseif e == 'modem_message' then
-        local res,err = crypt.master.receive(args, modem_handler)
+        local res,err = crypt.receive(args, modem_handler)
         if not res then print(err) end
     end
 end
