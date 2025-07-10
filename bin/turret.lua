@@ -1,8 +1,23 @@
-local crypt = f.loadfile("lib/cryptographie.lua")()
---crypt.slave.init()
+local crypt = f.loadfile("lib/cryptographie.lua")().slave
+crypt.init()
 local entd = component.os_entdetector
 local turret = component.os_energyturret
-local autorise = { "" }
+local autorised = {}
+
+crypt.send("get_list", "liste ?")
+
+local modem_handler = {}
+setmetatable(modem_handler, {
+    __index = function() return function() end end
+})
+
+function modem_handler.set_list(d)
+    autorised = d[1]
+end
+
+
+
+
 
 if entd == nil then
     error("Entity Detector component not found.")
@@ -12,35 +27,31 @@ turret.powerOn()
 turret.extendShaft(2)
 turret.setArmed(true)
 
-local function contient(liste, valeur)
-    for _, v in ipairs(liste) do
-        if v == valeur then
-            return true
-        end
-    end
-    return false
-end
-
 local cible = nil
 
-
 while true do
-    entd.scanPlayers(64)
-    local cibleTemp = nil
-    local event
-    repeat
-        event = table.pack(computer.pullSignal(0.05))
-        if event[1] == 'entityDetect' then
-            local name, distance, x, y, z = table.unpack(event, 3, 7)
-            y = y - 0.5
-            if not contient(autorise, name) then
-                if not cibleTemp or distance < cibleTemp.distance then
-                    cibleTemp = { x = x, y = y, z = z, distance = distance }
-                end
+    local detected = entd.scanPlayers(64)
+
+    local evt = table.pack(e.pullFiltered(0.1,function(e) return e == "modem_message" end))
+    if evt.n > 0 then
+        local args = table.move(evt, 2, evt.n, 1, {})
+        crypt.receive(args, modem_handler)
+    end
+    
+
+    local found = false
+    for _, player in ipairs(detected) do
+        if not autorised[player.name] then
+            if not cible then
+                crypt.send("log", "Unauthorized access attempt by " .. player.name)
             end
+            cible = { x = player.x, y = player.y - 0.5, z = player.z, distance = player.range }
+            cible.name = player.name -- On garde le nom du joueur pour le log
+            found = true
+            break
         end
-    until not event[1] or event[1] ~= 'entityDetect'
-    cible = cibleTemp -- Met à jour la cible (ou nil si aucune)
+    end
+    if not found then cible = nil end
 
     if cible then
         local azimuth = math.atan2(cible.x, -cible.z)
@@ -49,6 +60,5 @@ while true do
         if turret.isReady() then
             turret.fire()
         end
-        cible = nil -- On réinitialise pour la prochaine cible
     end
 end
