@@ -96,7 +96,7 @@ function command_handler.pin(d)
         return
     end
     pin = d[1]
-    crypt.broadcast("set_pin", pin)
+    crypt.sand_to_role("door","set_pin", pin)
     print("pin set to " .. pin)
 end
 
