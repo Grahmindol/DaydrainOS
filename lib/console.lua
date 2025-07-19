@@ -1,13 +1,12 @@
-
 local console = {}
 
 console.graphic = {
   bind = function()
-    local screen = component.list('screen')()
+    local screen = component.list("screen")()
     return component.gpu.bind(screen)
   end,
   available = function()
-    local gpu, screen = component.list('gpu')(), component.list('screen')()
+    local gpu, screen = component.list("gpu")(), component.list("screen")()
     return (gpu and screen)
   end,
   copy = component.gpu.copy,
@@ -17,14 +16,12 @@ console.graphic = {
   setBG = component.gpu.setBackground,
   setFG = component.gpu.setForeground,
   fill = function(x, y, w, h)
-    return component.gpu.fill(x, y, w, h, ' ')
+    return component.gpu.fill(x, y, w, h, " ")
   end,
   fillc = component.gpu.fill,
-  drawText = component.gpu.set,
+  drawText = component.gpu.set
 }
 local w, h = console.graphic.getResolution()
-local cx, cy = (w / 2), (h / 2)
-
 
 -- table serialize function
 function console.Serialize(o, depth)
@@ -33,29 +30,31 @@ function console.Serialize(o, depth)
     depth = depth or 3
     depth = depth - 1
     local indn = 0
-    local indent = ''
+    local indent = ""
     while indn < ind do
-      indent = indent .. '  '
+      indent = indent .. "  "
       indn = indn + 1
     end
-    local retstr = ''
+    local retstr = ""
     if type(o) == "number" then
-      retstr = retstr .. o .. ''
+      retstr = retstr .. o .. ""
     elseif type(o) == "boolean" then
       retstr = retstr .. tostring(o)
     elseif type(o) == "string" then
-      retstr = retstr .. string.format("%q", o) .. ''
+      retstr = retstr .. string.format("%q", o) .. ""
     elseif type(o) == "table" then
-      if depth <= 0 then return '<' .. type(o) .. '>' end
-      retstr = retstr .. '{\n'
-      for k, v in pairs(o) do
-        retstr = retstr .. indent .. '' .. k .. '='
-        retstr = retstr .. ser(v, depth, ind + 1)
-        retstr = retstr .. ',\n'
+      if depth <= 0 then
+        return "<" .. type(o) .. ">"
       end
-      retstr = retstr .. indent:sub(1, indent:len() - 2) .. '}'
+      retstr = retstr .. "{\n"
+      for k, v in pairs(o) do
+        retstr = retstr .. indent .. "" .. k .. "="
+        retstr = retstr .. ser(v, depth, ind + 1)
+        retstr = retstr .. ",\n"
+      end
+      retstr = retstr .. indent:sub(1, indent:len() - 2) .. "}"
     else
-      retstr = retstr .. '<' .. type(o) .. '>'
+      retstr = retstr .. "<" .. type(o) .. ">"
     end
     return retstr
   end
@@ -63,7 +62,7 @@ function console.Serialize(o, depth)
 end
 -- array to string / string to array
 function console.ArrayToStr(tabl)
-  local retval = ''
+  local retval = ""
   for i = 1, #tabl do
     retval = retval .. tabl[i]
   end
@@ -87,7 +86,8 @@ function console.lineoutoff(str, line, offs)
   console.graphic.drawText(offs, line, str)
 end
 -- history buffer
-console.history = { --  history system
+console.history = {
+  --  history system
   mem = {}, -- output lines history
   cmdmem = {}, -- command history
   size = h * 10, -- history size (10 screens)
@@ -98,14 +98,18 @@ console.history = { --  history system
   printoffset = 1, -- print offset x-axis
   lnum = 1, -- line number accumulator
   scrspeed = 5, -- scroll speed
-  scrdir = 0, -- scroll direction
+  scrdir = 0 -- scroll direction
 }
 function console.history.PrintAll()
   -- reprint viewport
-  if next(console.history.mem) == nil then return end
+  if next(console.history.mem) == nil then
+    return
+  end
   for i = 1, console.history.viewheight - 1 do
     local bot = console.history.viewbottom - (i - 1)
-    if bot <= 0 then return end
+    if bot <= 0 then
+      return
+    end
     local toprint = console.history.mem[bot]
     local cpos = console.history.viewheight - (i - 1)
     console.lineoutoff(toprint, cpos, console.history.printoffset)
@@ -113,25 +117,38 @@ function console.history.PrintAll()
 end
 function console.history.Update()
   -- update viewport
-  if next(console.history.mem) == nil then return end
+  if next(console.history.mem) == nil then
+    return
+  end
   if console.history.scrdir == 0 then
     console.history.PrintAll()
   elseif console.history.scrdir > 0 then
     -- user scrolled up
-    console.graphic.copy(1,2, w, h-console.history.scrspeed-2, 0, console.history.scrspeed)
+    console.graphic.copy(1, 2, w, h - console.history.scrspeed - 2, 0, console.history.scrspeed)
     for i = 1, console.history.scrspeed do
       local bot = (console.history.viewbottom - console.history.viewheight + 1 + console.history.scrspeed) - (i - 1)
-      if bot <= 0 then return end
+      if bot <= 0 then
+        return
+      end
       local toprint = console.history.mem[bot]
       local cpos = 1 + console.history.scrspeed - (i - 1)
       console.lineoutoff(toprint, cpos, console.history.printoffset)
     end
   elseif console.history.scrdir < 0 then
     -- user scrolled down
-    console.graphic.copy(1,2 + console.history.scrspeed, w, h-console.history.scrspeed-2, 0, -console.history.scrspeed)
+    console.graphic.copy(
+      1,
+      2 + console.history.scrspeed,
+      w,
+      h - console.history.scrspeed - 2,
+      0,
+      -console.history.scrspeed
+    )
     for i = 1, console.history.scrspeed do
       local bot = console.history.viewbottom - (i - 1)
-      if bot <= 0 then return end
+      if bot <= 0 then
+        return
+      end
       local toprint = console.history.mem[bot]
       local cpos = console.history.viewheight - (i - 1)
       console.lineoutoff(toprint, cpos, console.history.printoffset)
@@ -151,7 +168,9 @@ function console.history.ScrollTop()
 end
 function console.history.ScrollUp(scr)
   scr = scr or 1
-  if #console.history.mem < console.history.viewheight then return end
+  if #console.history.mem < console.history.viewheight then
+    return
+  end
   console.history.prevbottom = console.history.viewbottom
   console.history.viewbottom = console.history.viewbottom - scr
   console.history.scrdir = 1
@@ -173,7 +192,9 @@ function console.history.ScrollDown(scr)
   console.history.Update() -- print out history
 end
 function console.history.MoveRecall(pos)
-  if next(console.history.cmdmem) == nil then return end
+  if next(console.history.cmdmem) == nil then
+    return
+  end
   pos = pos or 0
   console.history.recallptr = console.history.recallptr + pos
   if console.history.recallptr >= #console.history.cmdmem then
@@ -186,7 +207,9 @@ function console.history.ResetRecall()
   console.history.recallptr = #console.history.cmdmem
 end
 function console.history.Recall()
-  if next(console.history.cmdmem) == nil then return "" end
+  if next(console.history.cmdmem) == nil then
+    return ""
+  end
   return console.history.cmdmem[console.history.recallptr]
 end
 function console.history.Add(str)
@@ -205,7 +228,7 @@ end
 console.input = {
   buffer = {}, -- input buffer
   col = 1, -- current input column
-  printoffset = 1, -- print offset
+  printoffset = 1 -- print offset
 }
 function console.input.Print()
   -- print input
@@ -229,8 +252,12 @@ end
 function console.input.SetPos(pos)
   -- set cursor position
   pos = pos or #console.input.buffer
-  if pos < 1 then pos = 1 end
-  if pos > #console.input.buffer then pos = #console.input.buffer + 1 end
+  if pos < 1 then
+    pos = 1
+  end
+  if pos > #console.input.buffer then
+    pos = #console.input.buffer + 1
+  end
   console.input.col = pos
 end
 function console.input.MovePos(mov)
@@ -248,7 +275,7 @@ end
 function console.input.Tokenize()
   input = console.ArrayToStr(console.input.buffer)
   local args = {}
-  local current = ''
+  local current = ""
   local in_quote = false
   local quote_char = nil
   local escaped = false
@@ -257,7 +284,7 @@ function console.input.Tokenize()
     if escaped then
       current = current .. c
       escaped = false
-    elseif c == '\\' then
+    elseif c == "\\" then
       escaped = true
     elseif in_quote then
       if c == quote_char then
@@ -269,10 +296,10 @@ function console.input.Tokenize()
     elseif c == '"' or c == "'" then
       in_quote = true
       quote_char = c
-    elseif c:match('%s') then
+    elseif c:match("%s") then
       if #current > 0 then
         table.insert(args, current)
-        current = ''
+        current = ""
       end
     else
       current = current .. c
@@ -300,13 +327,13 @@ function console.input.SetBuffer(str)
 end
 -- print function
 function console.print(str)
-  if type(str) == 'table' then
+  if type(str) == "table" then
     str = console.Serialize(str)
   else
     str = tostring(str)
   end
   local prev = 1
-  for w in string.gmatch(str, '()\n') do
+  for w in string.gmatch(str, "()\n") do
     console.history.Add(str:sub(prev, w - 1))
     prev = w + 1
   end
@@ -315,76 +342,76 @@ end
 
 function console.loop(handler)
   local w, h = console.graphic.getResolution()
-local cx, cy = (w / 2), (h / 2)
+  local cx, cy = (w / 2), (h / 2)
 
--- screen clear
-console.graphic.fill(1, 2, w, h)
--- print os header
-console.graphic.setFG(0x000000)
-console.graphic.setBG(0xFFFFFF)
-console.graphic.fill(1, 1, w, 1)
-console.graphic.drawText(1, 1, "  " .. _osname .. " " .. _osversion)
-console.graphic.setFG(0xFFFFFF)
-console.graphic.setBG(0x000000)
-    -- console init
-local console_header = "#> "
-local blinkon = true
-local hist = console.history
-local inp = console.input
-print = console.print
-console.lineout(console_header, h)
-inp.SetPrintOffset(#console_header + 1)
+  -- screen clear
+  console.graphic.fill(1, 2, w, h)
+  -- print os header
+  console.graphic.setFG(0x000000)
+  console.graphic.setBG(0xFFFFFF)
+  console.graphic.fill(1, 1, w, 1)
+  console.graphic.drawText(1, 1, "  " .. _osname .. " " .. _osversion)
+  console.graphic.setFG(0xFFFFFF)
+  console.graphic.setBG(0x000000)
+  -- console init
+  local console_header = "#> "
+  local blinkon = true
+  local hist = console.history
+  local inp = console.input
+  print = console.print
+  console.lineout(console_header, h)
+  inp.SetPrintOffset(#console_header + 1)
 
   -- console loop start
-while true do
+  while true do
     local evt = table.pack(computer.pullSignal(0.4))
-    if evt[1] == 'key_down' then
-        -- command
-        if evt[4] == 28 then -- enter key
-            hist.AddInp(inp.GetString()) -- add input to history
-            console.lineout(console_header, h)
-            -- parse command --
-            local cmd = inp.Tokenize() -- ou inp.GetString() si tu veux la chaine -- get string
-            handler("input_prompt", cmd)
-            inp.Clear() -- clear input buffer
-        elseif evt[4] == 14 then -- backspace
-            if inp.col > 1 then
-                inp.MovePos(-1)
-                inp.DelChar()
-                hist.ResetRecall()
-            end
-        elseif evt[4] == 200 then -- up key
-            hist.MoveRecall(-1)
-            inp.SetBuffer(hist.Recall())
-        elseif evt[4] == 208 then -- down key
-            hist.MoveRecall(1)
-            inp.SetBuffer(hist.Recall())
-        elseif evt[4] == 203 then -- left key
-            inp.MovePos(-1)
-        elseif evt[4] == 205 then --  right key
-            inp.MovePos(1)
-        elseif evt[4] == 199 then -- home
-            inp.MovePos(-99999)
-        elseif evt[4] == 207 then -- end
-            inp.MovePos(99999)
-        elseif evt[3] ~= 0 then -- printable keys
-            local char = string.char(evt[3])
-            inp.Insert(char)
-            inp.MovePos(1)
+    if evt[1] == "key_down" then
+      -- command
+      if evt[4] == 28 then -- enter key
+        hist.AddInp(inp.GetString()) -- add input to history
+        console.lineout(console_header, h)
+        -- parse command --
+        local cmd = inp.Tokenize() -- ou inp.GetString() si tu veux la chaine -- get string
+        handler("input_prompt", cmd)
+        inp.Clear() -- clear input buffer
+      elseif evt[4] == 14 then -- backspace
+        if inp.col > 1 then
+          inp.MovePos(-1)
+          inp.DelChar()
+          hist.ResetRecall()
         end
-    elseif evt[1] == 'scroll' then
-        if evt[5] > 0 then -- scroll up
-            hist.ScrollUp(hist.scrspeed)
-        elseif evt[5] < 0 then -- scroll down
-            hist.ScrollDown(hist.scrspeed)
-        end
-    elseif evt[1] == 'clipboard' then
-       for char in string.gmatch(evt[3], ".") do
-           inp.Insert(char)
-           inp.MovePos(1)
-       end
+      elseif evt[4] == 200 then -- up key
+        hist.MoveRecall(-1)
+        inp.SetBuffer(hist.Recall())
+      elseif evt[4] == 208 then -- down key
+        hist.MoveRecall(1)
+        inp.SetBuffer(hist.Recall())
+      elseif evt[4] == 203 then -- left key
+        inp.MovePos(-1)
+      elseif evt[4] == 205 then --  right key
+        inp.MovePos(1)
+      elseif evt[4] == 199 then -- home
+        inp.MovePos(-99999)
+      elseif evt[4] == 207 then -- end
+        inp.MovePos(99999)
+      elseif evt[3] ~= 0 then -- printable keys
+        local char = string.char(evt[3])
+        inp.Insert(char)
+        inp.MovePos(1)
+      end
+    elseif evt[1] == "scroll" then
+      if evt[5] > 0 then -- scroll up
+        hist.ScrollUp(hist.scrspeed)
+      elseif evt[5] < 0 then -- scroll down
+        hist.ScrollDown(hist.scrspeed)
+      end
+    elseif evt[1] == "clipboard" then
+      for char in string.gmatch(evt[3], ".") do
+        inp.Insert(char)
+        inp.MovePos(1)
+      end
     else
-        handler(evt[1], table.move(evt, 2, #evt, 1, {}))
+      handler(evt[1], table.move(evt, 2, #evt, 1, {}))
     end
     if blinkon then -- cursor blink
       local posx = console.input.col + console.input.printoffset - 1
@@ -397,7 +424,6 @@ while true do
       blinkon = true
     end
   end
-
 end
 
 return console
