@@ -194,6 +194,8 @@ if  component.openlight then
     f.runfile('bin/draconic') 
   elseif component.gpu then
     f.runfile('bin/serveur') 
+  elseif component.reactor or component.turbine then
+    f.runfile('bin/reactor')
 end
 
 
