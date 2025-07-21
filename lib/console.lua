@@ -340,7 +340,7 @@ function console.print(str)
   console.history.Add(str:sub(prev))
 end
 
-function console.loop(handler)
+function console.loop(handler, loop)
   local w, h = console.graphic.getResolution()
   local cx, cy = (w / 2), (h / 2)
 
@@ -423,6 +423,7 @@ function console.loop(handler)
       inp.Print()
       blinkon = true
     end
+    if loop then loop() end
   end
 end
 

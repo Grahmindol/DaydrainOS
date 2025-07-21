@@ -1,10 +1,16 @@
 local crypt = f.loadfile("lib/cryptographie.lua")().slave
+
 crypt.init("turret")
+
 local entd = component.os_entdetector
 local turret = component.os_energyturret
+local nfog = component.os_nanofog_terminal
+
 local autorised = {}
 
 crypt.send("get_list", "liste ?")
+
+--+-+-+-+-+ Modem Command +-+-+-+-+--
 
 local modem_handler = {}
 setmetatable(modem_handler, {
@@ -15,17 +21,21 @@ function modem_handler.set_list(d)
     autorised = d[1]
 end
 
-
-
-
-
 if entd == nil then
     error("Entity Detector component not found.")
 end
 
-turret.powerOn()
-turret.extendShaft(2)
-turret.setArmed(true)
+if not (nfog or turret) then 
+    error("nfog or turret component not found.")
+end
+
+if turret then
+    turret.powerOn()
+    turret.extendShaft(2)
+    turret.setArmed(true)
+end
+
+--+-+-+-+-+ Main Loop +-+-+-+-+--
 
 local cible = nil
 
@@ -45,8 +55,7 @@ while true do
             if not cible then
                 crypt.send("log", "Unauthorized access attempt by " .. player.name)
             end
-            cible = { x = player.x, y = player.y - 0.5, z = player.z, distance = player.range }
-            cible.name = player.name -- On garde le nom du joueur pour le log
+            cible = player
             found = true
             break
         end
@@ -54,11 +63,20 @@ while true do
     if not found then cible = nil end
 
     if cible then
-        local azimuth = math.atan2(cible.x, -cible.z)
-        local elevation = math.atan2(cible.y, cible.distance)
-        turret.moveToRadians(azimuth, elevation)
-        if turret.isReady() then
-            turret.fire()
+        if turret then
+            local azimuth = math.atan2(cible.x, -cible.z)
+            local elevation = math.atan2(cible.y, cible.range)
+            turret.moveToRadians(azimuth, elevation)
+            if turret.isReady() then
+                turret.fire()
+            end
         end
+
+        if nfog then 
+            nfog.set(cible.x,cible.y,cible.z,"gold_block")
+            nfog.setFilter(cible.x,cible.y,cible.z,"player", true,true)
+        end
+    elseif nfog then 
+        nfog.resetAll()
     end
 end
