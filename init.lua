@@ -186,7 +186,7 @@ if  component.openlight then
     f.runfile('bin/alarm')
   elseif component.os_doorcontroller or component.os_rolldoorcontroller then
     f.runfile('bin/door')
-  elseif component.os_energyturret then
+  elseif component.os_energyturret or component.os_nanofog_terminal then
     f.runfile('bin/turret')
   elseif component.openprinter then
     f.runfile('bin/printer')  
