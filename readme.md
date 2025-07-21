@@ -20,7 +20,7 @@ daydrainOS est conçu pour :
 - [x] Système d'alarme automatique (OpenSecurity)
 - [x] Système de lumiere automatique (OpenLight)
 - [ ] Système de gestion de stockage (ae2)
-- [ ] Système de gestion de productution d'energie (Extreme Reactor , Draconic Evolution)
+- [X] Système de gestion de productution d'energie (Extreme Reactor)
 - [ ] Système de gestion de stockage d'energie (Draconic Evolution)
 - [ ] Système de protection anti-tunnel (OpenSecurity)
 - [ ] Système d'armée de drone 

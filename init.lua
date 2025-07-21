@@ -192,10 +192,10 @@ if  component.openlight then
     f.runfile('bin/printer')  
   elseif component.draconic_reactor then
     f.runfile('bin/draconic') 
+  elseif component.br_reactor or component.br_turbine then
+    f.runfile('bin/reactor')
   elseif component.gpu then
     f.runfile('bin/serveur') 
-  elseif component.reactor or component.turbine then
-    f.runfile('bin/reactor')
 end
 
 
