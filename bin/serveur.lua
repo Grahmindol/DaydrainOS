@@ -86,7 +86,7 @@ function command_handler.add(d)
 end
 
 function command_handler.pin(d)
-    if #d[1] < 1 then
+    if #d < 1 then
         print("set_pin : missing pin")
         return
     end
@@ -96,7 +96,7 @@ function command_handler.pin(d)
         return
     end
     pin = d[1]
-    crypt.sand_to_role("door","set_pin", pin)
+    crypt.send_to_role("door","set_pin", pin)
     print("pin set to " .. pin)
 end
 

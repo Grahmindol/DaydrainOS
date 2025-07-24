@@ -20,7 +20,7 @@ Développer un OS sécurisé et robuste pour gérer et protéger ma base Minecra
 
 - [x] Système de **tourelles automatiques** (OpenSecurity)  
 - [x] Système de **portes automatiques** (OpenSecurity)  
-- [ ] Système **d'ascenseur automatique** (Thut's Elevators)  
+- [x] Système **d'ascenseur automatique** (Thut's Elevators)  
 - [x] Système **d'alarme automatique** (OpenSecurity)  
 - [x] Système **d’éclairage automatique** (OpenLights)  
 - [ ] Système de **gestion du stockage** (Applied Energistics 2)  

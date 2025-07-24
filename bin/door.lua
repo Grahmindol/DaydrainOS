@@ -10,6 +10,7 @@ local magreader = component.os_magreader
 local RFID = component.os_rfidreader
 local biometric = component.os_biometric
 local keypad = component.os_keypad
+local lift = component.lift
 
 local autorised = {}
 local pin = "mots de passe non tapable sur le keypad"
@@ -35,12 +36,6 @@ end
 
 --+-+-+-+-+ Door Logic +-+-+-+-+--
 
-if (not doorCtrl) and (not rolldoor) then
-    error("Door Controller component not found.")
-elseif rolldoor  then
-    rolldoor.setSpeed(3)
-end
-
 if keypad then
     keypad.setDisplay("...", 7)
     keypad.setKey({"1", "2", "3", "4", "5", "6", "7", "8", "9", "<", "0", ">"},
@@ -53,6 +48,7 @@ if doorCtrl then
 end
 
 if rolldoor then
+    rolldoor.setSpeed(3)
     rolldoor.close()
 end
 
@@ -75,6 +71,10 @@ local function checkPin()
         if rolldoor then
             rolldoor.open()
         end
+        if lift then
+            lift.callFloor(lift.getFloor())
+            dsleep(3)
+        end
     else
         keypad.setDisplay("denied", 4)
     end
@@ -86,6 +86,9 @@ local function checkPin()
     end
     if rolldoor then
         rolldoor.close()
+    end
+    if lift then
+        lift.callFloor(-lift.getFloor())
     end
 end
 
@@ -127,6 +130,10 @@ while true do
             if rolldoor then
                 rolldoor.open()
             end
+            if lift then
+                lift.callFloor(lift.getFloor())
+                sleep(3)
+            end
             player_uuid = nil
             sleep(2)
             if doorCtrl then
@@ -134,6 +141,9 @@ while true do
             end
             if rolldoor then
                 rolldoor.close()
+            end
+            if lift then
+                lift.callFloor(-lift.getFloor())
             end
         end
     end
