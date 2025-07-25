@@ -1,25 +1,27 @@
 local console = {}
 
 console.graphic = {
-  bind = function()
-    local screen = component.list("screen")()
-    return component.gpu.bind(screen)
+  copy = function(...)
+    if not component.gpu then return end
+    component.gpu.copy(...)
   end,
-  available = function()
-    local gpu, screen = component.list("gpu")(), component.list("screen")()
-    return (gpu and screen)
+  getResolution = function() return 80,25 end,
+  setBG = function(...)
+    if not component.gpu then return end
+    component.gpu.setBackground(...)
   end,
-  copy = component.gpu.copy,
-  getResolution = component.gpu.getResolution,
-  setResolution = component.gpu.setResolution,
-  getDepth = component.gpu.maxDepth,
-  setBG = component.gpu.setBackground,
-  setFG = component.gpu.setForeground,
+  setFG = function(...)
+    if not component.gpu then return end
+    component.gpu.setForeground(...)
+  end,
   fill = function(x, y, w, h)
-    return component.gpu.fill(x, y, w, h, " ")
+    if not component.gpu then return end
+    component.gpu.fill(x, y, w, h, " ")
   end,
-  fillc = component.gpu.fill,
-  drawText = component.gpu.set
+  drawText = function(...)
+    if not component.gpu then return end
+    component.gpu.set(...)
+  end
 }
 local w, h = console.graphic.getResolution()
 
@@ -339,6 +341,7 @@ function console.print(str)
   end
   console.history.Add(str:sub(prev))
 end
+print = console.print
 
 function console.loop(handler)
   local w, h = console.graphic.getResolution()
@@ -358,7 +361,6 @@ function console.loop(handler)
   local blinkon = true
   local hist = console.history
   local inp = console.input
-  print = console.print
   console.lineout(console_header, h)
   inp.SetPrintOffset(#console_header + 1)
 

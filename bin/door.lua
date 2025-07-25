@@ -1,4 +1,5 @@
 local crypt = f.loadfile("lib/cryptographie.lua")().slave
+local console = f.loadfile("lib/console.lua")()
 
 crypt.init("door")
 
@@ -22,9 +23,15 @@ crypt.send("get_list", "liste ?")
 --+-+-+-+-+ Modem Command +-+-+-+-+--
 
 local modem_handler = {}
-setmetatable(modem_handler, {
-    __index = function() return function() end end
-})
+setmetatable(
+    modem_handler,
+    {
+        __index = function()
+            return function()
+            end
+        end
+    }
+)
 
 function modem_handler.set_list(d)
     autorised = d[2]
@@ -38,22 +45,41 @@ end
 
 if keypad then
     keypad.setDisplay("...", 7)
-    keypad.setKey({"1", "2", "3", "4", "5", "6", "7", "8", "9", "<", "0", ">"},
-        {7, 7, 7, 7, 7, 7, 7, 7, 7, 4, 7, 2})
+    keypad.setKey({"1", "2", "3", "4", "5", "6", "7", "8", "9", "<", "0", ">"}, {7, 7, 7, 7, 7, 7, 7, 7, 7, 4, 7, 2})
     crypt.send("get_pin", "pin ?")
 end
 
-if doorCtrl then
-    doorCtrl.close()
+local function open()
+    print("opening door...")
+    if doorCtrl then
+        doorCtrl.open()
+    end
+    if rolldoor then
+        rolldoor.open()
+    end
+    if lift then
+        lift.callFloor(lift.getFloor())
+        sleep(3)
+    end
 end
 
-if rolldoor then
-    rolldoor.setSpeed(3)
-    rolldoor.close()
+
+local function close()
+    print("closing door...")
+    if doorCtrl then
+        doorCtrl.close()
+    end
+    if rolldoor then
+        rolldoor.close()
+    end
+    if lift then
+        lift.callFloor((lift.getFloor() + 64) % 128)
+    end
 end
+close()
 
 local function updateDisplay()
-    if keypad  then
+    if keypad then
         local displayString = ""
         for i = 1, #keypadInput do
             displayString = displayString .. "*"
@@ -65,86 +91,50 @@ end
 local function checkPin()
     if keypadInput == pin then
         keypad.setDisplay("granted", 2)
-        if doorCtrl then
-            doorCtrl.open()
-        end
-        if rolldoor then
-            rolldoor.open()
-        end
-        if lift then
-            lift.callFloor(lift.getFloor())
-            sleep(3)
-        end
+        open()
     else
         keypad.setDisplay("denied", 4)
+        print("access denied with bad pin :".. keypadInput)
     end
     sleep(2)
     keypadInput = ""
     updateDisplay()
-    if doorCtrl then
-        doorCtrl.close()
-    end
-    if rolldoor then
-        rolldoor.close()
-    end
-    if lift then
-        lift.callFloor((lift.getFloor()+64)%128)
-    end
+    close()
 end
 
 --+-+-+-+-+ Main Loop +-+-+-+-+--
 
-while true do
+function handler(e, args)
+    if e == "keypad" then
+        if args[2] == 10 then -- backspace
+            keypadInput = keypadInput:sub(1, -2)
+            updateDisplay()
+        elseif args[2] == 12 then -- enter
+            checkPin()
+        else
+            keypadInput = keypadInput .. args[3]
+            updateDisplay()
+        end
+    elseif e == "bioReader" then
+        player_uuid = args[2]
+    elseif e == "magData" then
+        player_uuid = args[3]
+    elseif e == "rfidData" then
+        player_uuid = args[4]
+    elseif e == "modem_message" then
+        crypt.receive(args, modem_handler)
+    end
+
     if RFID then
         RFID.scan(2)
     end
 
-    local evt = table.pack(computer.pullSignal(0.4))
-
-    if evt.n > 0 then
-        if evt[1] == 'keypad' then
-            if evt[3] == 10 then -- backspace
-                keypadInput = keypadInput:sub(1, -2)
-                updateDisplay()
-            elseif evt[3] == 12 then -- enter
-                checkPin()
-            else
-                keypadInput = keypadInput .. evt[4]
-                updateDisplay()
-            end
-        elseif evt[1] == 'bioReader' then
-            player_uuid = evt[3]
-        elseif evt[1] == 'magData' then
-            player_uuid = evt[4]
-        elseif evt[1] == 'rfidData' then
-            player_uuid = evt[5]
-        elseif evt[1] == 'modem_message' then
-            local args = table.move(evt, 2, evt.n, 1, {})
-            crypt.receive(args, modem_handler)
-        end
-
-        if autorised[player_uuid] then
-            if doorCtrl then
-                doorCtrl.open()
-            end
-            if rolldoor then
-                rolldoor.open()
-            end
-            if lift then
-                lift.callFloor(lift.getFloor())
-                sleep(3)
-            end
-            player_uuid = nil
-            sleep(2)
-            if doorCtrl then
-                doorCtrl.close()
-            end
-            if rolldoor then
-                rolldoor.close()
-            end
-            if lift then
-                lift.callFloor((lift.getFloor()+64)%128)
-            end
-        end
+    if player_uuid and autorised[player_uuid] then
+        open()
+        player_uuid = nil
+        sleep(2)
+        close()
     end
 end
+
+console.loop(handler)
