@@ -6,24 +6,9 @@ crypt.init("drone")
 _osname = _osname.. " - Drone Manager"
 
 local tunnel = component.tunnel
+tunnel.send("WAKEUP")
+tunnel.send(f.readfile("bin/drone/core.lua"))
 
---+-+-+-+-+ Modem Command +-+-+-+-+--
-
-local modem_handler = {}
-setmetatable(modem_handler, {
-    __index = function() return function(d)print("unknow message :") print(d)end end
-})
-
---+-+-+-+-+ Shell Command +-+-+-+-+--
-
-local command_handler = {}
-setmetatable(command_handler, {
-    __index = function(_,k) return function()print("unknow command ".. k) command_handler.help() end end
-})
-
-function command_handler.help(d)
-    print("help : show this page")
-end
 
 --+-+-+-+-+ Main Loop +-+-+-+-+--
 
@@ -32,7 +17,7 @@ function handler(e,args)
         tunnel.send(table.concat(args, " "))
     elseif e == 'modem_message' then
         if args[1] == tunnel.address then
-            print(args)
+            print(table.move(args, 5, #args, 1, {}))
         else
             local res,err = crypt.receive(args, modem_handler)
             if not res then print(err) end
