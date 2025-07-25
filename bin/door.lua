@@ -73,7 +73,7 @@ local function checkPin()
         end
         if lift then
             lift.callFloor(lift.getFloor())
-            dsleep(3)
+            sleep(3)
         end
     else
         keypad.setDisplay("denied", 4)
@@ -88,7 +88,7 @@ local function checkPin()
         rolldoor.close()
     end
     if lift then
-        lift.callFloor(-lift.getFloor())
+        lift.callFloor((lift.getFloor()+64)%128)
     end
 end
 
@@ -143,7 +143,7 @@ while true do
                 rolldoor.close()
             end
             if lift then
-                lift.callFloor(-lift.getFloor())
+                lift.callFloor((lift.getFloor()+64)%128)
             end
         end
     end
