@@ -1,6 +1,9 @@
 local crypt = f.loadfile("lib/cryptographie.lua")().slave
+local console = f.loadfile("lib/console.lua")()
 
 crypt.init("turret")
+
+_osname = _osname.. " - Turret/Fog Manager"
 
 local entd = component.os_entdetector
 local turret = component.os_energyturret
@@ -8,7 +11,7 @@ local nfog = component.os_nanofog_terminal
 
 local autorised = {}
 
-crypt.send("get_list", "liste ?")
+crypt.send("get_list")
 
 --+-+-+-+-+ Modem Command +-+-+-+-+--
 
@@ -39,21 +42,17 @@ end
 
 local cible = nil
 
-while true do
-    local detected = entd.scanPlayers(64)
-
-    local evt = table.pack(e.pullFiltered(0.1,function(e) return e == "modem_message" end))
-    if evt.n > 0 then
-        local args = table.move(evt, 2, evt.n, 1, {})
+function handler(e,args)
+    if e == 'modem_message' then
         crypt.receive(args, modem_handler)
     end
     
-
+    local detected = entd.scanPlayers(64)
     local found = false
     for _, player in ipairs(detected) do
         if not autorised[player.name] then
             if not cible then
-                crypt.send("log", "Unauthorized access attempt by " .. player.name)
+                print("Unauthorized access attempt by " .. player.name)
             end
             cible = player
             found = true
@@ -80,3 +79,5 @@ while true do
         nfog.resetAll()
     end
 end
+
+console.loop(handler)
