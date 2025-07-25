@@ -51,15 +51,16 @@ end
 
 local function open()
     print("opening door...")
+    if lift then
+        local floor = lift.getFloorYValue(lift.getFloor())
+        lift.callYValue(floor)
+        while lift.getYValue() ~= floor do sleep(0.4) end
+    end
     if doorCtrl then
         doorCtrl.open()
     end
     if rolldoor then
         rolldoor.open()
-    end
-    if lift then
-        lift.callFloor(lift.getFloor())
-        sleep(3)
     end
 end
 

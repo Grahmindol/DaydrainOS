@@ -5,8 +5,6 @@ crypt.init("light")
 
 _osname = _osname.. " - Ligh Manager"
 
-
-
 --+-+-+-+-+ Modem Command +-+-+-+-+--
 
 local modem_handler = {}

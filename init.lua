@@ -20,7 +20,7 @@ function component.setPrimary(dev, addr)
   end
 end
 function component.getPrimary(dev)
-  if _component_primaries[dev] == null then
+  if _component_primaries[dev] == nil then
     for k, v in component.list() do
       if v == dev then component.setPrimary(v,k) break end
     end
@@ -194,6 +194,10 @@ if  component.openlight then
     f.runfile('bin/draconic') 
   elseif component.br_reactor or component.br_turbine then
     f.runfile('bin/reactor')
+  elseif component.me_interface or component.me_controller then
+    f.runfile('bin/me_network')
+  elseif component.tunnel then
+    f.runfile('bin/drone')
   elseif component.gpu then
     f.runfile('bin/serveur') 
 end
