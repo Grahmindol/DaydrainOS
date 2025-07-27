@@ -1,14 +1,24 @@
 local crypt = f.loadfile("lib/cryptographie.lua")().slave
 local console = f.loadfile("lib/console.lua")()
 
-crypt.init("drone")
+f.loadfile("bin/drone/lua-star.lua")()
+
+--crypt.init("drone")
 
 _osname = _osname.. " - Drone Manager"
 
 local tunnel = component.tunnel
 tunnel.send("WAKEUP")
-tunnel.send(f.readfile("bin/drone/core.lua"))
+sleep(0.5)
 
+local waypoint = component.waypoint
+
+if waypoint then  
+    waypoint.setLabel(tunnel.getChannel())
+end
+
+tunnel.send(f.readfile("bin/drone/core.lua"))
+tunnel.send(f.readfile("bin/drone/lua-star.lua"))
 
 --+-+-+-+-+ Main Loop +-+-+-+-+--
 

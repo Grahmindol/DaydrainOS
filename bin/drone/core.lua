@@ -56,3 +56,5 @@ function loop(handler)
         handler(evt[1], table.move(evt, 2, #evt, 1, {}))
     end
 end
+
+return true
