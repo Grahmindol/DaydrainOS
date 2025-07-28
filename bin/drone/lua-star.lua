@@ -1,10 +1,10 @@
 -- made by Grahmindol on 2025 from https://github.com/wesleywerner/lua-star/blob/master/src/lua-star.lua 
 astar = {}
 
-local geolyzer = component.geolyzer
+
 local function getHardness(x,y,z) 
     if math.max(math.abs(x), math.abs(y), math.abs(z)) > 32 then return -1 end
-    return 0 == geolyzer.scan(x,z,y,1,1,1,true)[1] and 0 or -1
+    return 0 == component.geolyzer.scan(x,z,y,1,1,1)[1] and 0 or -1
 end
 
 local function distance(x1, y1, z1, x2, y2, z2)
@@ -21,7 +21,7 @@ local function calculateScore(previous, node, goal)
 end
 
 local function key(node)
-    return node.x .. "," .. node.y .. "," .. node.z
+    return ((node.x + 32) << 12) | ((node.y + 32) << 6) | (node.z + 32)
 end
 
 local function getAdjacent(node)
@@ -40,7 +40,7 @@ local function getAdjacent(node)
     return neighbors
 end
 
-function astar:find(gx,gy,gz)
+local function find_path_to(gx,gy,gz)
     local goal = {x = gx, y = gy, z = gz}
     local start = {x = 0, y = 0, z = 0, g = 0}
     start.f = distance(0, 0, 0, goal.x, goal.y, goal.z)
@@ -81,4 +81,31 @@ function astar:find(gx,gy,gz)
     end
 
     return nil
+end
+
+local function pathToMoves(path)
+    local moves = {}
+    if #path < 2 then return moves end
+
+    for i = 2,#path do 
+        table.insert(moves,{
+            dx = path[i].x - path[i-1].x,
+            dy = path[i].y - path[i-1].y,
+            dz = path[i].z - path[i-1].z
+        })
+    end
+
+    return moves
+end
+
+function astar.go_to(gx,gy,gz)
+    local path = find_path_to(gx,gy,gz)
+    if not path then return false end
+    local d = component.drone
+    local moves = pathToMoves(path)
+    for _, m in ipairs(moves) do 
+        d.move(m.dx,m.dy,m.dz)
+        while d.getOffset() > 0.5 do end
+    end
+    return true
 end
