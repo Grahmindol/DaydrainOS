@@ -14,11 +14,14 @@ sleep(0.5)
 local waypoint = component.waypoint
 
 if waypoint then  
-    waypoint.setLabel(tunnel.getChannel())
+    waypoint.setLabel(string.sub(tunnel.getChannel(), 1, 8))
 end
 
 tunnel.send(f.readfile("bin/drone/core.lua"))
 tunnel.send(f.readfile("bin/drone/lua-star.lua"))
+
+
+tunnel.send(f.readfile("bin/drone/crop_farmer.lua"))
 
 --+-+-+-+-+ Main Loop +-+-+-+-+--
 
