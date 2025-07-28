@@ -27,7 +27,7 @@ tunnel.send(f.readfile("bin/drone/crop_farmer.lua"))
 
 function handler(e,args)
     if e=='input_prompt' then 
-        tunnel.send(table.concat(args, " "))
+        tunnel.send(table.unpack(args))
     elseif e == 'modem_message' then
         if args[1] == tunnel.address then
             print(table.move(args, 5, #args, 1, {}))
