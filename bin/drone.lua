@@ -1,8 +1,6 @@
 local crypt = f.loadfile("lib/cryptographie.lua")().slave
 local console = f.loadfile("lib/console.lua")()
 
-f.loadfile("bin/drone/lua-star.lua")()
-
 --crypt.init("drone")
 
 _osname = _osname.. " - Drone Manager"

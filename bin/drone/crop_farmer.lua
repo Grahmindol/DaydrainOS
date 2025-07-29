@@ -42,10 +42,10 @@ local function get_traveler()
             while d.getOffset() > 0.1 do sleep(0.05) end
             coroutine.yield(true)
         end
-        move(0,0,-4)
+        move(0,-1,-4)
         local _,y,_ = n.getPosition()
         d.move(0,math.floor(y) - y + 1.1,0)
-        d.setAcceleration(0.5)
+        d.setAcceleration(0.3)
         while d.getOffset() > 0.3 do sleep(0.05) end
         swing(5) move_and_wait(1, 0, 0)  -- descente initiale
 
@@ -64,16 +64,43 @@ local function get_traveler()
     end)
 end
 
+local function is_inventory_ok()
+    if d.count() == 1 then 
+        for i = 1, d.inventorySize() do 
+            if d.compareTo(i) and i ~= d.select() then
+                local sel = d.select()
+                d.select(i)
+                d.transferTo(sel)
+                d.select(sel)
+                break
+            end
+        end 
+    elseif d.count() == 0 then 
+        return false
+    end
+    for i = 1, d.inventorySize() do 
+        if d.space(i) > 0 then
+            return true
+        end
+    end
+    return false
+end
+
 -- Gestion des événements "farm" et "home"
 local traveler = function()end
+local is_farming = false
 function handler(e, args)
     if e == "farm" then
+        d.setStatusText("wait inv")
+        while not is_inventory_ok() do sleep(0.05) end
+
         while not astar.go_to_waypoint("farm", args[2]) do
             d.setStatusText("scanning farm")
         end
 
         d.setStatusText("farming")
         traveler = get_traveler()
+        is_farming = true
         d.select(tonumber(args[1]) or 1)
 
     elseif e == "home" then
@@ -82,12 +109,32 @@ function handler(e, args)
         end
         d.setStatusText("waiting")
         traveler = function()end 
+        is_farming = false
     end
 
-    if traveler() then 
-        d.place(0)      -- tente de replanter
-    else 
-        traveler = function()end 
+    if is_farming then
+        if not is_inventory_ok() then
+            d.move(0,1,0) -- to be sure tho not be in culture
+            astar.record_moves()
+            
+            while not astar.go_to_waypoint(string.sub(t.getChannel(), 1, 8)) do
+                d.setStatusText("scanning home")
+            end
+            d.setStatusText("wait inv")
+            while not is_inventory_ok() do sleep(0.05) end
+            d.setStatusText("return farming")
+            astar.rollback_moves()
+            d.move(0,-1,0)
+            d.setAcceleration(0.3)
+            d.setStatusText("farming")
+        end
+        if traveler() then 
+            d.place(0)      -- tente de replanter
+        else
+            is_farming = false
+            traveler = function()end 
+            t.send("farming finisht")
+        end
     end
 end
 

@@ -48,7 +48,7 @@ local function distance(x1, y1, z1, x2, y2, z2)
 end
 
 local function calculateScore(previous, node, goal)
-    local cost = 1
+    local cost = 2
     if previous.parent then
         local dx1 = previous.parent.x - previous.x
         local dy1 = previous.parent.y - previous.y
@@ -59,7 +59,7 @@ local function calculateScore(previous, node, goal)
         local dz2 = previous.z - node.z
 
         if dx1 == dx2 or dy1 == dy2 or dz1 == dz2 then
-            cost = 0.1
+            cost = 0
         end
     end
 
@@ -131,45 +131,63 @@ local function find_path_to(gx,gy,gz)
 
     return nil
 end
+function astar.is_straight_fly_possible(fx, fy, fz, tx, ty, tz)
+    -- helpers
+    local function ipart(x) return math.floor(x) end
+    local function fpart(x) return x - math.floor(x) end
+    local function rfpart(x) return 1 - fpart(x) end
+
+    -- centre des voxels (pour tester traversée précise)
+    fx, fy, fz = fx + 0.5, fy + 0.5, fz + 0.5
+    tx, ty, tz = tx + 0.5, ty + 0.5, tz + 0.5
+
+    local dx, dy, dz = tx - fx, ty - fy, tz - fz
+    local steps = math.max(math.abs(dx), math.abs(dy), math.abs(dz))
+
+    local xinc, yinc, zinc = dx / steps, dy / steps, dz / steps
+
+    local x, y, z = fx, fy, fz
+
+    for i = 0, steps do
+        local cx, cy, cz = ipart(x), ipart(y), ipart(z)
+
+        -- Si bloc bloquant => false
+        if getHardness(cx, cy, cz) < 0 then return false end
+
+        x = x + xinc
+        y = y + yinc
+        z = z + zinc
+    end
+
+    return true
+end
+
 
 local function pathToMoves(path)
     if #path < 2 then return {} end
 
-    -- 1ère passe : construire la liste brute des déplacements unitaires
-    local raw = {}
-    for i = 2, #path do
-        table.insert(raw, {
-            dx = path[i].x - path[i-1].x,
-            dy = path[i].y - path[i-1].y,
-            dz = path[i].z - path[i-1].z
-        })
-    end
-
-    -- 2e passe : fusionner les déplacements dans la même direction
     local moves = {}
-    local last = raw[1]
-    local count = 1
+    local anchor = path[1]
 
-    for i = 2, #raw do
-        local step = raw[i]
-        if step.dx == last.dx and step.dy == last.dy and step.dz == last.dz then
-            count = count + 1
-        else
+    for i = 2, #path do
+        local current = path[i]
+        if not astar.is_straight_fly_possible(anchor.x, anchor.y, anchor.z, current.x, current.y, current.z) then
+            local prev = path[i - 1]
             table.insert(moves, {
-                dx = last.dx * count,
-                dy = last.dy * count,
-                dz = last.dz * count
+                dx = prev.x - anchor.x,
+                dy = prev.y - anchor.y,
+                dz = prev.z - anchor.z
             })
-            last = step
-            count = 1
+            anchor = prev
         end
     end
 
-    -- push final move
+    -- Dernier segment
+    local last = path[#path]
     table.insert(moves, {
-        dx = last.dx * count,
-        dy = last.dy * count,
-        dz = last.dz * count
+        dx = last.x - anchor.x,
+        dy = last.y - anchor.y,
+        dz = last.z - anchor.z
     })
 
     return moves
@@ -178,7 +196,7 @@ end
 
 function astar.go_to(gx,gy,gz)
     if gx==0 and gy==0 and gz==0 then return true end
-    local path = find_path_to(gx,gy,gz)
+    local path = find_path_to(math.floor(gx),math.floor(gy),math.floor(gz))
     if not path then return false end
     local d = component.drone
     local moves = pathToMoves(path)
@@ -189,6 +207,8 @@ function astar.go_to(gx,gy,gz)
         d.move(m.dx,m.dy,m.dz)
         while d.getOffset() > 0.2 do end
     end
+    d.move(gx - math.floor(gx),gy - math.floor(gy),gz - math.floor(gz))
+    while d.getOffset() > 0.1 do end
     return true
 end
 
@@ -204,4 +224,28 @@ function astar.go_to_waypoint(label, max_sig)
     end
 
     return false
+end
+
+local move_hist = {}
+local std_move = component.drone.move
+
+component.drone.move = function(x,y,z)
+    local last = table.remove(move_hist)
+    if last then 
+        last[1] = last[1] - x 
+        last[2] = last[2] - y 
+        last[3] = last[3] - z 
+        table.insert(move_hist,last)
+    end
+    std_move(x,y,z)
+end
+
+function astar.record_moves()
+    table.insert(move_hist,{0,0,0})
+end
+
+function astar.rollback_moves()
+    local last = table.remove(move_hist)
+    component.tunnel.send(table.unpack(last))
+    return last and astar.go_to(table.unpack(last))
 end
