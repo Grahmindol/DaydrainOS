@@ -65,7 +65,7 @@ local function open()
 end
 
 
-local function close()
+local function close(no_return)
     print("closing door...")
     if doorCtrl then
         doorCtrl.close()
@@ -73,7 +73,7 @@ local function close()
     if rolldoor then
         rolldoor.close()
     end
-    if lift then
+    if lift and not no_return then
         lift.callFloor((lift.getFloor() + 64) % 128)
     end
 end
@@ -135,6 +135,12 @@ function handler(e, args)
         player_uuid = nil
         sleep(2)
         close()
+    end
+
+    if lift and lift.getFloorYValue(lift.getFloor()) == lift.getYValue() then
+        open()
+    else 
+        close(true)
     end
 end
 
