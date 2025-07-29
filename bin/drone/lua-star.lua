@@ -58,8 +58,8 @@ local function calculateScore(previous, node, goal)
         local dy2 = previous.y - node.y
         local dz2 = previous.z - node.z
 
-        if dx1 == dx2 and dy1 == dy2 and dz1 == dz2 then
-            cost = 0.5
+        if dx1 == dx2 or dy1 == dy2 or dz1 == dz2 then
+            cost = 0.1
         end
     end
 
@@ -182,6 +182,9 @@ function astar.go_to(gx,gy,gz)
     if not path then return false end
     local d = component.drone
     local moves = pathToMoves(path)
+    local _,y,_ = component.navigation.getPosition()
+    d.move(0,math.floor(y) - y + 0.5,0)
+    d.setAcceleration(2)
     for _, m in ipairs(moves) do 
         d.move(m.dx,m.dy,m.dz)
         while d.getOffset() > 0.2 do end

@@ -15,43 +15,52 @@ d.setStatusText("waiting")
 -- Coroutine de déplacement farming
 local function get_traveler()
     return coroutine.wrap(function()
-        local move
+        local move, swing
 
         -- Détermine l'orientation du drone
         for side = 2, 5 do
             if d.detect(side) then
                 move = ({
                     [2] = function(x, y, z) d.move(z, y, x) end,   -- -Z
-                    [3] = function(x, y, z) d.move(-z, y, x) end,  -- +Z
+                    [3] = function(x, y, z) d.move(-z, y, -x) end,  -- +Z
                     [4] = function(x, y, z) d.move(x, y, z) end,   -- -X
                     [5] = function(x, y, z) d.move(-x, y, z) end   -- +X
+                })[side]
+                swing = ({
+                    [2] = function(s) d.swing(s > 3 and s-2 or s+2) end,   -- -Z
+                    [3] = function(s) d.swing(7 - s) end,  -- +Z
+                    [4] = function(s) d.swing(s) end,   -- -X
+                    [5] = function(s) d.swing(s == 5 and 4 or s == 4 and 5 or s) end   -- x -> -x
                 })[side]
                 break
             end
         end
-
-        d.setAcceleration(0.5)
         
         -- Petit délai de stabilisation
         local function move_and_wait(x, y, z)
             move(x, y, z)
-            while d.getOffset() > 0.3 do sleep(0.05) end
+            while d.getOffset() > 0.1 do sleep(0.05) end
             coroutine.yield(true)
         end
-
-        move_and_wait(1, 0, -4)  -- descente initiale
+        move(0,0,-4)
+        local _,y,_ = n.getPosition()
+        d.move(0,math.floor(y) - y + 1.1,0)
+        d.setAcceleration(0.5)
+        while d.getOffset() > 0.3 do sleep(0.05) end
+        swing(5) move_and_wait(1, 0, 0)  -- descente initiale
 
         -- Pattern de serpentin (4 lignes)
         for _ = 1, 4 do
-            for _ = 1, 8 do move_and_wait(1, 0, 0) end
-            move_and_wait(0, 0, 1)
-            for _ = 1, 8 do move_and_wait(-1, 0, 0) end
-            move_and_wait(0, 0, 1)
+            for _ = 1, 8 do swing(5) move_and_wait(1, 0, 0) end
+            swing(3) move_and_wait(0, 0, 1)
+            for _ = 1, 8 do swing(4) move_and_wait(-1, 0, 0) end
+            swing(3) move_and_wait(0, 0, 1)
         end
 
         -- Retour au point de départ
-        for _ = 1, 8 do move_and_wait(1, 0, 0) end
-        move_and_wait(-8, 0, -8)
+        for _ = 1, 8 do swing(5) move_and_wait(1, 0, 0) end
+        d.setAcceleration(2)
+        move(-9, 0, -8)
     end)
 end
 
