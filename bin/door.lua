@@ -66,7 +66,9 @@ end
 
 
 local function close(no_return)
-    print("closing door...")
+    if not no_return then
+        print("closing door...")
+    end
     if doorCtrl then
         doorCtrl.close()
     end
@@ -93,14 +95,14 @@ local function checkPin()
     if keypadInput == pin then
         keypad.setDisplay("granted", 2)
         open()
+        sleep(2)
+        close()
     else
         keypad.setDisplay("denied", 4)
         print("access denied with bad pin :".. keypadInput)
     end
-    sleep(2)
     keypadInput = ""
     updateDisplay()
-    close()
 end
 
 --+-+-+-+-+ Main Loop +-+-+-+-+--

@@ -44,7 +44,7 @@ local function get_traveler()
         end
         move(0,-1,-4)
         local _,y,_ = n.getPosition()
-        d.move(0,math.floor(y) - y + 1.1,0)
+        d.move(0,math.floor(y-0.2) - y + 1.1,0)
         d.setAcceleration(0.3)
         while d.getOffset() > 0.3 do sleep(0.05) end
         swing(5) move_and_wait(1, 0, 0)  -- descente initiale
@@ -60,26 +60,30 @@ local function get_traveler()
         -- Retour au point de départ
         for _ = 1, 8 do swing(5) move_and_wait(1, 0, 0) end
         d.setAcceleration(2)
-        move(-9, 0, -8)
     end)
 end
 
 local function is_inventory_ok()
-    if d.count() == 1 then 
-        for i = 1, d.inventorySize() do 
-            if d.compareTo(i) and i ~= d.select() then
-                local sel = d.select()
+    local sel = d.select()
+    for j = 1, d.inventorySize() do
+        d.select(j)
+        for i = j+1, d.inventorySize() do 
+            if d.compareTo(i) then
                 d.select(i)
-                d.transferTo(sel)
-                d.select(sel)
+                d.transferTo(j)
+                d.select(j)
                 break
             end
         end 
-    elseif d.count() == 0 then 
+    end 
+    d.select(sel)
+
+    if d.count() == 0 then 
         return false
     end
-    for i = 1, d.inventorySize() do 
-        if d.space(i) > 0 then
+
+    for i = d.inventorySize(),2,-1  do 
+        if d.count(i) == 0 then
             return true
         end
     end
@@ -94,7 +98,7 @@ function handler(e, args)
         d.setStatusText("wait inv")
         while not is_inventory_ok() do sleep(0.05) end
 
-        while not astar.go_to_waypoint("farm", args[2]) do
+        while not astar.go_to_waypoint("farm", tonumber(args[2])) do
             d.setStatusText("scanning farm")
         end
 

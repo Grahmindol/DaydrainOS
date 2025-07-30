@@ -132,28 +132,42 @@ local function find_path_to(gx,gy,gz)
     return nil
 end
 function astar.is_straight_fly_possible(fx, fy, fz, tx, ty, tz)
-    -- helpers
-    local function ipart(x) return math.floor(x) end
-    local function fpart(x) return x - math.floor(x) end
-    local function rfpart(x) return 1 - fpart(x) end
-
-    -- centre des voxels (pour tester traversée précise)
+    -- Centre des voxels
     fx, fy, fz = fx + 0.5, fy + 0.5, fz + 0.5
     tx, ty, tz = tx + 0.5, ty + 0.5, tz + 0.5
 
-    local dx, dy, dz = tx - fx, ty - fy, tz - fz
-    local steps = math.max(math.abs(dx), math.abs(dy), math.abs(dz))
+    local dx = tx - fx
+    local dy = ty - fy
+    local dz = tz - fz
 
-    local xinc, yinc, zinc = dx / steps, dy / steps, dz / steps
+    local ax, ay, az = math.abs(dx), math.abs(dy), math.abs(dz)
+
+    local steps, xinc, yinc, zinc
+
+    if ax >= ay and ax >= az then
+        steps = ax
+        xinc = dx > 0 and 1 or -1
+        yinc = dy / ax
+        zinc = dz / ax
+    elseif ay >= ax and ay >= az then
+        steps = ay
+        xinc = dx / ay
+        yinc = dy > 0 and 1 or -1
+        zinc = dz / ay
+    else
+        steps = az
+        xinc = dx / az
+        yinc = dy / az
+        zinc = dz > 0 and 1 or -1
+    end
 
     local x, y, z = fx, fy, fz
 
-    for i = 0, steps do
-        local cx, cy, cz = ipart(x), ipart(y), ipart(z)
-
-        -- Si bloc bloquant => false
-        if getHardness(cx, cy, cz) < 0 then return false end
-
+    for i = 0, math.floor(steps) do
+        local cx, cy, cz = math.floor(x), math.floor(y), math.floor(z)
+        if getHardness(cx, cy, cz) < 0 then
+            return false
+        end
         x = x + xinc
         y = y + yinc
         z = z + zinc
@@ -201,7 +215,7 @@ function astar.go_to(gx,gy,gz)
     local d = component.drone
     local moves = pathToMoves(path)
     local _,y,_ = component.navigation.getPosition()
-    d.move(0,math.floor(y) - y + 0.5,0)
+    d.move(0,math.floor(y-0.2) - y + 0.5,0)
     d.setAcceleration(2)
     for _, m in ipairs(moves) do 
         d.move(m.dx,m.dy,m.dz)
