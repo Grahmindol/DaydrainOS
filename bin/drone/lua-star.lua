@@ -215,7 +215,7 @@ function astar.go_to(gx,gy,gz)
     local d = component.drone
     local moves = pathToMoves(path)
     local _,y,_ = component.navigation.getPosition()
-    d.move(0,math.floor(y-0.2) - y + 0.5,0)
+    d.move(0,math.floor(y-0.1) - y + 0.5,0)
     d.setAcceleration(2)
     for _, m in ipairs(moves) do 
         d.move(m.dx,m.dy,m.dz)
@@ -228,6 +228,11 @@ end
 
 function astar.go_to_waypoint(label, max_sig)
     max_sig = max_sig or 15
+    
+    local d = component.drone
+    local _,y,_ = component.navigation.getPosition()
+    d.move(0,math.floor(y-0.1) - y + 0.5,0)
+    while d.getOffset() > 0.1 do sleep(0.05) end
 
     for _,w in ipairs(component.navigation.findWaypoints(64)) do
         if w.redstone <= max_sig and w.label == label then

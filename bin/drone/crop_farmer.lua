@@ -6,9 +6,7 @@ d.setStatusText("hello world")
 d.setAcceleration(1)
 
 -- Aller au point de départ (home)
-while not astar.go_to_waypoint(string.sub(t.getChannel(), 1, 8)) do
-    d.setStatusText("going to home")
-end
+while not astar.go_to_waypoint("home-"..string.sub(t.getChannel(), 1, 8)) do end
 
 d.setStatusText("waiting")
 
@@ -45,7 +43,7 @@ local function get_traveler()
         move(0,-1,-4)
         local _,y,_ = n.getPosition()
         d.move(0,math.floor(y-0.2) - y + 1.1,0)
-        d.setAcceleration(0.3)
+        d.setAcceleration(0.5)
         while d.getOffset() > 0.3 do sleep(0.05) end
         swing(5) move_and_wait(1, 0, 0)  -- descente initiale
 
@@ -95,22 +93,20 @@ local traveler = function()end
 local is_farming = false
 function handler(e, args)
     if e == "farm" then
-        d.setStatusText("wait inv")
+        d.setStatusText("ivt check")
         while not is_inventory_ok() do sleep(0.05) end
 
-        while not astar.go_to_waypoint("farm", tonumber(args[2])) do
-            d.setStatusText("scanning farm")
-        end
+        d.setStatusText("search farm")
+        while not astar.go_to_waypoint("field-"..args[1]) do end
 
         d.setStatusText("farming")
         traveler = get_traveler()
         is_farming = true
-        d.select(tonumber(args[1]) or 1)
-
+        d.select(tonumber(args[2]) or 1)
     elseif e == "home" then
-        while not astar.go_to_waypoint(string.sub(t.getChannel(), 1, 8)) do
-            d.setStatusText("scanning home")
-        end
+        d.setStatusText("search home")
+        while not astar.go_to_waypoint("home-"..string.sub(t.getChannel(), 1, 8)) do end
+
         d.setStatusText("waiting")
         traveler = function()end 
         is_farming = false
@@ -121,15 +117,16 @@ function handler(e, args)
             d.move(0,1,0) -- to be sure tho not be in culture
             astar.record_moves()
             
-            while not astar.go_to_waypoint(string.sub(t.getChannel(), 1, 8)) do
-                d.setStatusText("scanning home")
-            end
+            d.setStatusText("search home")
+            while not astar.go_to_waypoint("home-"..string.sub(t.getChannel(), 1, 8)) do end
+
             d.setStatusText("wait inv")
             while not is_inventory_ok() do sleep(0.05) end
+            
             d.setStatusText("return farming")
             astar.rollback_moves()
             d.move(0,-1,0)
-            d.setAcceleration(0.3)
+            d.setAcceleration(0.5)
             d.setStatusText("farming")
         end
         if traveler() then 
@@ -137,7 +134,8 @@ function handler(e, args)
         else
             is_farming = false
             traveler = function()end 
-            t.send("farming finisht")
+            t.send("available")
+            d.setStatusText("available")
         end
     end
 end
