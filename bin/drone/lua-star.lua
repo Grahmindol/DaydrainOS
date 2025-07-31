@@ -11,41 +11,11 @@ local function getHardness(x,y,z)
     return 0 == astar.hardness_map[k][y+33] and 0 or -1
 end
 
-local heap = {}
-function heap.push(h, node)
-    table.insert(h, node)
-    local i = #h
-    while i > 1 do
-        local parent = math.floor(i/2)
-        if h[i].f >= h[parent].f then break end
-        h[i], h[parent] = h[parent], h[i]
-        i = parent
-    end
-end
+local heap={}
+function heap.push(a,b)table.insert(a,b)local c=#a;while c>1 do local d=math.floor(c/2)if a[c].f>=a[d].f then break end;a[c],a[d]=a[d],a[c]c=d end end
+function heap.pop(a)local e=a[1]a[1]=a[#a]table.remove(a)local c=1;while true do local f,g=c*2,c*2+1;local h=c;if f<=#a and a[f].f<a[h].f then h=f end;if g<=#a and a[g].f<a[h].f then h=g end;if h==c then break end;a[c],a[h]=a[h],a[c]c=h end;return e end
 
-function heap.pop(h)
-    local root = h[1]
-    h[1] = h[#h]
-    table.remove(h)
-    local i = 1
-    while true do
-        local left, right = i*2, i*2+1
-        local smallest = i
-        if left <= #h and h[left].f < h[smallest].f then smallest = left end
-        if right <= #h and h[right].f < h[smallest].f then smallest = right end
-        if smallest == i then break end
-        h[i], h[smallest] = h[smallest], h[i]
-        i = smallest
-    end
-    return root
-end
-
-local function distance(x1, y1, z1, x2, y2, z2)
-    local dx = x1 - x2
-    local dy = y1 - y2
-    local dz = z1 - z2
-    return dx * dx + dy * dy + dz * dz
-end
+local function distance(a,b,c,d,e,f)local g=a-d;local h=b-e;local i=c-f;return g*g+h*h+i*i end
 
 local function calculateScore(previous, node, goal)
     local cost = 2
@@ -68,9 +38,7 @@ local function calculateScore(previous, node, goal)
     return g + h, g, h
 end
 
-local function key(node)
-    return ((node.x + 32) << 12) | ((node.y + 32) << 6) | (node.z + 32)
-end
+local function key(a) return a.x+32<<12|(a.y+32<<6)|a.z+32 end
 
 local function getAdjacent(node)
     local dirs = {
@@ -131,110 +99,49 @@ local function find_path_to(gx,gy,gz)
 
     return nil
 end
-function astar.is_straight_fly_possible(fx, fy, fz, tx, ty, tz)
-    -- Centre des voxels
-    fx, fy, fz = fx + 0.5, fy + 0.5, fz + 0.5
-    tx, ty, tz = tx + 0.5, ty + 0.5, tz + 0.5
 
-    local dx = tx - fx
-    local dy = ty - fy
-    local dz = tz - fz
-
-    local ax, ay, az = math.abs(dx), math.abs(dy), math.abs(dz)
-
-    local steps, xinc, yinc, zinc
-
-    if ax >= ay and ax >= az then
-        steps = ax
-        xinc = dx > 0 and 1 or -1
-        yinc = dy / ax
-        zinc = dz / ax
-    elseif ay >= ax and ay >= az then
-        steps = ay
-        xinc = dx / ay
-        yinc = dy > 0 and 1 or -1
-        zinc = dz / ay
-    else
-        steps = az
-        xinc = dx / az
-        yinc = dy / az
-        zinc = dz > 0 and 1 or -1
-    end
-
-    local x, y, z = fx, fy, fz
-
-    for i = 0, math.floor(steps) do
-        local cx, cy, cz = math.floor(x), math.floor(y), math.floor(z)
-        if getHardness(cx, cy, cz) < 0 then
-            return false
-        end
-        x = x + xinc
-        y = y + yinc
-        z = z + zinc
-    end
-
-    return true
-end
-
-
-local function pathToMoves(path)
-    if #path < 2 then return {} end
-
-    local moves = {}
-    local anchor = path[1]
-
-    for i = 2, #path do
-        local current = path[i]
-        if not astar.is_straight_fly_possible(anchor.x, anchor.y, anchor.z, current.x, current.y, current.z) then
-            local prev = path[i - 1]
-            table.insert(moves, {
-                dx = prev.x - anchor.x,
-                dy = prev.y - anchor.y,
-                dz = prev.z - anchor.z
-            })
-            anchor = prev
-        end
-    end
-
-    -- Dernier segment
-    local last = path[#path]
-    table.insert(moves, {
-        dx = last.x - anchor.x,
-        dy = last.y - anchor.y,
-        dz = last.z - anchor.z
-    })
-
-    return moves
-end
-
+local function is_straight_fly_possible(a,b,c,d,e,f)if not component.drone then return false end;a,b,c=a+0.5,b+0.5,c+0.5;d,e,f=d+0.5,e+0.5,f+0.5;local g=d-a;local h=e-b;local i=f-c;local j,k,l=math.abs(g),math.abs(h),math.abs(i)local m,n,o,p;if j>=k and j>=l then m=j;n=g>0 and 1 or-1;o=h/j;p=i/j elseif k>=j and k>=l then m=k;n=g/k;o=h>0 and 1 or-1;p=i/k else m=l;n=g/l;o=h/l;p=i>0 and 1 or-1 end;local q,r,s=a,b,c;for t=0,math.floor(m)do local u,v,w=math.floor(q),math.floor(r),math.floor(s)if getHardness(u,v,w)<0 then return false end;q=q+n;r=r+o;s=s+p end;return true end
+local function pathToMoves(a)if#a<2 then return{}end;local b={}local c=a[1]for d=2,#a do local e=a[d]if not is_straight_fly_possible(c.x,c.y,c.z,e.x,e.y,e.z)then local f=a[d-1]table.insert(b,{dx=f.x-c.x,dy=f.y-c.y,dz=f.z-c.z})c=f end end;local g=a[#a]table.insert(b,{dx=g.x-c.x,dy=g.y-c.y,dz=g.z-c.z})return b end
 
 function astar.go_to(gx,gy,gz)
     if gx==0 and gy==0 and gz==0 then return true end
     local path = find_path_to(math.floor(gx),math.floor(gy),math.floor(gz))
     if not path then return false end
-    local d = component.drone
     local moves = pathToMoves(path)
-    local _,y,_ = component.navigation.getPosition()
-    d.move(0,math.floor(y-0.1) - y + 0.5,0)
-    d.setAcceleration(2)
-    for _, m in ipairs(moves) do 
-        d.move(m.dx,m.dy,m.dz)
-        while d.getOffset() > 0.2 do end
+
+    local d = component.drone
+    if d then
+        local _,y,_ = component.navigation.getPosition()
+        d.move(0,math.floor(y-0.1) - y + 0.5,0)
+        d.setAcceleration(2)
     end
-    d.move(gx - math.floor(gx),gy - math.floor(gy),gz - math.floor(gz))
-    while d.getOffset() > 0.1 do end
+
+    for _, m in ipairs(moves) do 
+        (d or component.robot).move(m.dx,m.dy,m.dz)
+        if d then while d.getOffset() > 0.2 do end end
+    end
+
+    if d then 
+        d.move(gx - math.floor(gx),gy - math.floor(gy),gz - math.floor(gz))
+        while d.getOffset() > 0.1 do end 
+    end
     return true
 end
 
 function astar.go_to_waypoint(label, max_sig)
+    local n = component.navigation
+    if not n then return false, "navigation upgrade required" end
+    
     max_sig = max_sig or 15
     
     local d = component.drone
-    local _,y,_ = component.navigation.getPosition()
-    d.move(0,math.floor(y-0.1) - y + 0.5,0)
-    while d.getOffset() > 0.1 do sleep(0.05) end
+    if d then 
+        local _,y,_ = n.getPosition()
+        d.move(0,math.floor(y-0.1) - y + 0.5,0)
+        while d.getOffset() > 0.1 do sleep(0.05) end
+    end
 
-    for _,w in ipairs(component.navigation.findWaypoints(64)) do
+    for _,w in ipairs(n.findWaypoints(64)) do
         if w.redstone <= max_sig and w.label:sub(-#label) == label then
             if astar.go_to(table.unpack(w.position)) then 
                 return true, w.label
@@ -246,25 +153,14 @@ function astar.go_to_waypoint(label, max_sig)
 end
 
 local move_hist = {}
-local std_move = component.drone.move
 
-component.drone.move = function(x,y,z)
-    local last = table.remove(move_hist)
-    if last then 
-        last[1] = last[1] - x 
-        last[2] = last[2] - y 
-        last[3] = last[3] - z 
-        table.insert(move_hist,last)
-    end
-    std_move(x,y,z)
+if component.drone then 
+    local a=component.drone.move
+    component.drone.move=function(b,c,d)local e=table.remove(move_hist)if e then e[1]=e[1]-b;e[2]=e[2]-c;e[3]=e[3]-d;table.insert(move_hist,e)end;a(b,c,d)end 
+elseif component.robot then 
+    local a=component.robot.move
+    component.robot.move=function(b,c,d)local e=table.remove(move_hist)if e then e[1]=e[1]-b;e[2]=e[2]-c;e[3]=e[3]-d;table.insert(move_hist,e)end;for f=1,b do a(5)end;for f=-1,b,-1 do a(4)end;for f=1,d do a(3)end;for f=-1,d,-1 do a(2)end;for f=1,c do a(1)end;for f=-1,c,-1 do a(0)end end 
 end
 
-function astar.record_moves()
-    table.insert(move_hist,{0,0,0})
-end
-
-function astar.rollback_moves()
-    local last = table.remove(move_hist)
-    component.tunnel.send(table.unpack(last))
-    return last and astar.go_to(table.unpack(last))
-end
+function astar.record_moves()table.insert(move_hist,{0,0,0})end
+function astar.rollback_moves()local a=table.remove(move_hist)return a and astar.go_to(table.unpack(a))end

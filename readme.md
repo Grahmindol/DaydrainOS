@@ -18,36 +18,30 @@ Développer un OS sécurisé et robuste pour gérer et protéger ma base Minecra
 
 ## 🚀 Fonctionnalités principales
 
-- [x] Système de **tourelles automatiques** (OpenSecurity)  
-- [x] Système de **portes automatiques** (OpenSecurity)  
-- [x] Système **d'ascenseur automatique** (Thut's Elevators)  
-- [x] Système **d'alarme automatique** (OpenSecurity)  
-- [x] Système **d’éclairage automatique** (OpenLights)  
-- [ ] Système de **gestion du stockage** (Applied Energistics 2)  
-- [x] Système de **gestion de la production d’énergie** (Extreme Reactors)  
-- [ ] Système de **gestion du stockage d’énergie** (Draconic Evolution)  
-- [x] Système de **protection anti-tunnel** (OpenSecurity)  
-- [x] Système de **productution de ressource**
-- [x] **Production de ressources** :
-  - [x] 🌾 Champs classiques (9×9)
-    - [x] 🌽 Blé  
-    - [x] 🥔 Patate  
-    - [x] 🥕 Carotte  
-    - [x] 🍠 Betterave  
+- [x] 💥 Système de **tourelles automatiques** (OpenSecurity)  
+- [x] 🚪 Système de **portes automatiques** (OpenSecurity)  
+- [x] 🛗 Système **d'ascenseur automatique** (Thut's Elevators)  
+- [x] 🚨 Système **d'alarme automatique** (OpenSecurity)  
+- [x] 🔦 Système **d’éclairage automatique** (OpenLights)  
+- [ ] 📦 Système de **gestion du stockage** (Applied Energistics 2)  
+- [x] ⚡ Système de **gestion de la production d’énergie** (Extreme Reactors)  (Draconic Evolution)  
+- [x] 🕳️ Système de **protection anti-tunnel** (OpenSecurity)  
+- [x] 🌱 Système de **Production de ressources** :
+  - [x] 🌾🥔🥕🍠 Champs classiques (9×9) 
   - [x] 🍉 Champs en ligne
     - [x] 🍉 Melon  
     - [x] 🎃 Citrouille  
-    - [x] 🌱 Sugar Cane  
+    - [x] 🎋 Sugar Cane  
     - [ ] 🟫 Cocoa Beans  
-    - [ ] 🌵 Cactus  
-    - [x] 🎋 Bambou  
+    - [ ] 🌵 Cactus 
   - [ ] 🐄 Fermes animales
     - [ ] 🐄 Vaches  
     - [ ] 🐑 Moutons  
     - [ ] 🐔 Poulets  
     - [ ] 🐖 Cochons  
   - [ ] ⛏️ Mine
-- [ ] Système **d’armée de drones**  
+  - [ ] 🌳 Tree farm
+- [ ] 🪖 Système **d’armée de drones**  
 
 ---
 

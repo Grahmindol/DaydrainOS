@@ -37,6 +37,7 @@ function command_handler.help(d)
     print("send_to <role> [<arg1> <arg2> ... <argn>] : encode and send data to all slave with the given role")
     print("add <name> : add a name to the list of authorized users")
     print("pin <pin> : set the pin to use with the keypad, must be between 4 and 8 characters")
+    print("flash : flashes GML Drone BIOS data to an eeprom")
 end
 
 function command_handler.send_to(d)
@@ -55,6 +56,35 @@ function command_handler.send(d)
     local res, err = crypt.send(d[1], "log", table.unpack(table.move(d, 2, #d, 1, {})))
     if res then print("sent !")
     else print(err) end
+end
+
+function command_handler.flash(d)
+    if not component.os_cardwriter then 
+        print("Put an empty eeprom in the conputer")
+        print("Press any key to continue")
+        e.pull("key_down")
+        if component.eeprom then 
+            print("flashing !")
+            component.eeprom.set(f.readfile("bin/drone/bios.lua"))
+            component.eeprom.setLabel("GML Slave BIOS")
+            component.eeprom.makeReadonly(component.eeprom.getChecksum())
+            print("done !")
+        else 
+            print("no eeprom aborting !")
+        end 
+    else 
+        print("Put an empty eeprom in the card writer")
+        print("Press any key to continue")
+        e.pull("key_down")
+        print("flashing !")
+        local res, err = component.os_cardwriter.flash(f.readfile("bin/drone/bios.lua"), "GML Slave BIOS", true)
+        if not res then 
+            print("ERROR :" .. err)
+            print("aborting !")
+        else 
+            print("done !")
+        end
+    end
 end
 
 function command_handler.add(d)
