@@ -235,9 +235,9 @@ function astar.go_to_waypoint(label, max_sig)
     while d.getOffset() > 0.1 do sleep(0.05) end
 
     for _,w in ipairs(component.navigation.findWaypoints(64)) do
-        if w.redstone <= max_sig and w.label == label then
+        if w.redstone <= max_sig and w.label:sub(-#label) == label then
             if astar.go_to(table.unpack(w.position)) then 
-                return true
+                return true, w.label
             end
         end
     end

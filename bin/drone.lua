@@ -21,6 +21,9 @@ for addr,_ in component.list("waypoint") do
     elseif string.sub(waypoint.getLabel(),1,5) == "field" then
         waypoint.setLabel("field-"..string.sub(addr, 1, 8))
         table.insert(field_queue,string.sub(addr, 1, 8))
+    elseif string.sub(waypoint.getLabel(),1,4) == "line" then
+        waypoint.setLabel("line-"..string.sub(addr, 1, 8))
+        table.insert(field_queue,string.sub(addr, 1, 8))
     end
 
     waypoints[addr] = waypoint

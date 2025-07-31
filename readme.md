@@ -27,6 +27,26 @@ Développer un OS sécurisé et robuste pour gérer et protéger ma base Minecra
 - [x] Système de **gestion de la production d’énergie** (Extreme Reactors)  
 - [ ] Système de **gestion du stockage d’énergie** (Draconic Evolution)  
 - [x] Système de **protection anti-tunnel** (OpenSecurity)  
+- [x] Système de **productution de ressource**
+- [x] **Production de ressources** :
+  - [x] 🌾 Champs classiques (9×9)
+    - [x] 🌽 Blé  
+    - [x] 🥔 Patate  
+    - [x] 🥕 Carotte  
+    - [x] 🍠 Betterave  
+  - [x] 🍉 Champs en ligne
+    - [x] 🍉 Melon  
+    - [x] 🎃 Citrouille  
+    - [x] 🌱 Sugar Cane  
+    - [ ] 🟫 Cocoa Beans  
+    - [ ] 🌵 Cactus  
+    - [x] 🎋 Bambou  
+  - [ ] 🐄 Fermes animales
+    - [ ] 🐄 Vaches  
+    - [ ] 🐑 Moutons  
+    - [ ] 🐔 Poulets  
+    - [ ] 🐖 Cochons  
+  - [ ] ⛏️ Mine
 - [ ] Système **d’armée de drones**  
 
 ---
