@@ -1,6 +1,6 @@
 # daydrainOS
 
-**daydrainOS** est un système d’exploitation personnalisé pour [OpenComputers](https://www.curseforge.com/minecraft/mc-mods/opencomputers), basé sur [LiskelOS](https://github.com/cyntachs/LiskelOS).  
+**daydrainOS** est un système d’exploitation personnalisé pour [OpenComputers](https://www.curseforge.com/minecraft/mc-mods/opencomputers) (et [OpenComputers: Rebooted](https://github.com/PC-Logix/OpenComputers) également à present), basé sur [LiskelOS](https://github.com/cyntachs/LiskelOS).  
 Ce projet est dédié à mon frère **Daydrain**, contre qui je dois protéger ma base ! 🛡️🏰
 
 ---
@@ -47,9 +47,45 @@ Développer un OS sécurisé et robuste pour gérer et protéger ma base Minecra
 
 ## 💡 Installation
 
+### En 1.12.2:
+
 1. Télécharger ou cloner le dépôt  
 2. Utiliser [OpenDisks](https://legacy.curseforge.com/minecraft/mc-mods/opendisks) pour charger le dossier dans une disquette en jeu  
-3. Suivre la procédure de démarrage :
+3. Suivre la procédure de démarrage.
+
+### En 1.21.1:
+
+pour [OpenComputers: Rebooted](https://github.com/PC-Logix/OpenComputers)
+
+1. Se rendre dans le dossier `datapacks` de votre monde (voir [ici](https://minecraft.wiki/w/Tutorial:Creating_a_data_pack) si besoin est)
+2. Créer un dossier et y entrer (ex : `mkdir DaydrainOS && cd DaydrainOS/`)
+3. Créer un fichier `pack.mcmeta` et y écrire :
+
+```json
+{
+  "pack": {
+    "pack_format": 48,
+    "description": "Daydrain OS datapack"
+  }
+}
+```
+
+4. Créer le répertoire `data/daydrainos/opencomputers/loot_disks` et y entrer (ex: `mkdir -P data/daydrainos/opencomputers/loot_disks`)
+
+5. Créer un fichier `daydrainos.json` et y écrire :
+
+```json
+{
+  "label": "Daydrain OS",
+  "color": "cyan",
+  "weight": 1,
+  "recipe_cycling": true
+}
+```
+
+6. Cloner le dépôt dans un nouveau dossier à créer : `daydrainos` (ex: `git clone https://github.com/Grahmindol/DaydrainOS.git daydrainos`)
+
+7. En jeu, éxecuter `/reload` et suivre la procédure de démarrage.
 
 ---
 
@@ -77,4 +113,15 @@ Chaque esclave détecte automatiquement son rôle au démarrage, selon les **pé
 
 ---
 
+# Utilisation de l'IA
+
+- Des LLM sont utilisés en tant que moteur de recherche, correcteur orthographique et traducteur.
+- Les LLM ne sont jamais utilisés pour aluciner du code. Ce ne sont que des perroquets stochastiques qui sont vu et utilisés comme tel.
+- Greenpaece à raison : https://www.greenpeace.org/international/story/82486/ai-energy-environment-democracy/
+
+---
+
 Made with ❤️ and vengeance.
+
+Under MIT Licence.
+
